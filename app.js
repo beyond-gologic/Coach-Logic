@@ -27,21 +27,48 @@ const state = {
 };
 
 const menus = {
-  tone: ["Professional", "Warm", "Direct", "Encouraging"],
-  language: ["English", "Spanish", "French", "Portuguese"],
+  tone: [
+    "Professional",
+    "Casual",
+    "Friendly",
+    "Formal",
+    "Direct",
+    "Encouraging",
+    "Empathetic",
+    "Creative",
+    "Humorous",
+    "Concise",
+  ],
+  language: ["English", "Spanish", "French", "Portuguese", "German"],
 };
 
 const assistantReplies = {
-  English: "Thanks for sharing. I’m capturing that so I can tailor the next onboarding questions for your business.",
-  Spanish: "Gracias por compartirlo. Lo estoy registrando para adaptar las siguientes preguntas de onboarding a tu negocio.",
-  French: "Merci pour votre partage. Je l'enregistre pour adapter les prochaines questions d'onboarding a votre entreprise.",
+  English:    "Thanks for sharing. I’m capturing that so I can tailor the next onboarding questions for your business.",
+  Spanish:    "Gracias por compartirlo. Lo estoy registrando para adaptar las siguientes preguntas de onboarding a tu negocio.",
+  French:     "Merci pour votre partage. Je l’enregistre pour adapter les prochaines questions d’onboarding a votre entreprise.",
   Portuguese: "Obrigado por compartilhar. Estou registrando isso para adaptar as proximas perguntas de onboarding ao seu negocio.",
+  German:     "Danke fürs Teilen. Ich erfasse das, um die nächsten Onboarding-Fragen auf Ihr Unternehmen abzustimmen.",
 };
 
-// voice_id values are ElevenLabs voice IDs.
-// Replace with your chosen Coach Logic personality voice IDs.
+// Personality → ElevenLabs voice ID mapping.
+// Each personality has a distinct voice character.
+// Replace voice_id values with your chosen Coach Logic voice IDs from ElevenLabs.
+const personalityVoices = {
+  Professional: { name: "Rachel",  voice_id: "21m00Tcm4TlvDq8ikWAM" }, // calm, articulate
+  Casual:       { name: "Sam",     voice_id: "yoZ06aMxZJJ28mfd3POQ" }, // relaxed, conversational
+  Friendly:     { name: "Bella",   voice_id: "EXAVITQu4vr4xnSDxMaL" }, // warm, approachable
+  Formal:       { name: "Arnold",  voice_id: "VR6AewLTigWG4xSOukaG" }, // crisp, authoritative
+  Direct:       { name: "Domi",    voice_id: "AZnzlk1XvdvUeBnXmlld" }, // strong, confident
+  Encouraging:  { name: "Elli",    voice_id: "MF3mGyEYCl7XYWbV9V6O" }, // upbeat, expressive
+  Empathetic:   { name: "Josh",    voice_id: "TxGEqnHWrfWFTfGW9XjX" }, // warm, understanding
+  Creative:     { name: "Antoni",  voice_id: "ErXwobaYiN019PkySvjV" }, // engaging, dynamic
+  Humorous:     { name: "Sam",     voice_id: "yoZ06aMxZJJ28mfd3POQ" }, // light, playful
+  Concise:      { name: "Adam",    voice_id: "pNInz6obpgDQGcFmaJgB" }, // deep, clear
+};
+
+// Language → fallback voice (used when personality voice not resolved)
 const elevenLabsVoices = {
-  English:    { voice: "Sarah",   voice_id: "EXAVITQu4vr4xnSDxMaL" },
+  English:    { voice: "Rachel",  voice_id: "21m00Tcm4TlvDq8ikWAM" },
   Spanish:    { voice: "Sofia",   voice_id: "EXAVITQu4vr4xnSDxMaL" },
   French:     { voice: "Camille", voice_id: "EXAVITQu4vr4xnSDxMaL" },
   Portuguese: { voice: "Mateus",  voice_id: "EXAVITQu4vr4xnSDxMaL" },
@@ -247,10 +274,14 @@ const handleSpeech = async (text, button) => {
     return;
   }
 
-  const voiceProfile = elevenLabsVoices[state.language] || elevenLabsVoices.English;
+  const voiceProfile =
+    personalityVoices[state.tone] ||
+    elevenLabsVoices[state.language] ||
+    elevenLabsVoices.English;
+
   state.speakingButton = button;
   button.classList.add("is-active");
-  setStatus(`Generating voice in ${state.language}...`);
+  setStatus(`Generating ${state.tone} voice...`);
 
   try {
     const res = await fetch("/api/speak", {
