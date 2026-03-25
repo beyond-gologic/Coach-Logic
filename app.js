@@ -401,6 +401,14 @@ const setTone = (value) => {
   setStatus(`Tone set to ${value}`);
 };
 
+const langCodes = {
+  English: "en-US",
+  Spanish: "es-ES",
+  French: "fr-FR",
+  Portuguese: "pt-PT",
+  German: "de-DE",
+};
+
 const startDictation = (button) => {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
@@ -408,54 +416,58 @@ const startDictation = (button) => {
     return;
   }
 
-  if (!state.recognition) {
-    state.recognition = new SpeechRecognition();
-    state.recognition.interimResults = false;
-    state.recognition.maxAlternatives = 1;
-
-    state.recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      input.value = input.value ? `${input.value} ${transcript}` : transcript;
-      autosizeInput();
-      setStatus("Voice note added to message");
-    };
-
-    state.recognition.onerror = (event) => {
-      state.isListening = false;
-      state.recognition = null;
-      document.querySelectorAll('[data-tool="mic"]').forEach((icon) => icon.classList.remove("is-active"));
-      const messages = {
-        "not-allowed": "Microphone access denied — please allow it in browser settings",
-        "audio-capture": "No microphone found",
-        "network": "Network error during voice input",
-        "no-speech": "No speech detected — try again",
-      };
-      setStatus(messages[event.error] || `Voice error: ${event.error}`);
-    };
-
-    state.recognition.onend = () => {
-      state.isListening = false;
-      document.querySelectorAll('[data-tool="mic"]').forEach((icon) => icon.classList.remove("is-active"));
-    };
-  }
-
-  if (state.isListening) {
+  // Stop if already listening
+  if (state.isListening && state.recognition) {
     state.recognition.stop();
     return;
   }
 
-  state.recognition.lang =
-    {
-      English: "en-US",
-      Spanish: "es-ES",
-      French: "fr-FR",
-      Portuguese: "pt-PT",
-    }[state.language] || "en-US";
+  // Always create a fresh instance — reusing after errors causes network failures
+  state.recognition = new SpeechRecognition();
+  state.recognition.lang = langCodes[state.language] || "en-US";
+  state.recognition.interimResults = false;
+  state.recognition.maxAlternatives = 1;
+  state.recognition.continuous = false;
+
+  state.recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    input.value = input.value ? `${input.value} ${transcript}` : transcript;
+    autosizeInput();
+    setStatus("Voice note added to message");
+  };
+
+  state.recognition.onerror = (event) => {
+    state.isListening = false;
+    state.recognition = null;
+    document.querySelectorAll('[data-tool="mic"]').forEach((el) => el.classList.remove("is-active"));
+    const messages = {
+      "not-allowed":    "Microphone access denied — allow it in browser settings",
+      "audio-capture":  "No microphone found",
+      "network":        "Speech API unreachable — check your connection",
+      "no-speech":      "No speech detected — try again",
+      "aborted":        "",
+    };
+    setStatus(messages[event.error] ?? `Voice error: ${event.error}`);
+  };
+
+  state.recognition.onend = () => {
+    state.isListening = false;
+    state.recognition = null;
+    document.querySelectorAll('[data-tool="mic"]').forEach((el) => el.classList.remove("is-active"));
+  };
 
   state.isListening = true;
   button.classList.add("is-active");
-  state.recognition.start();
   setStatus("Listening...");
+
+  try {
+    state.recognition.start();
+  } catch (err) {
+    state.isListening = false;
+    state.recognition = null;
+    button.classList.remove("is-active");
+    setStatus(`Could not start mic: ${err.message}`);
+  }
 };
 
 const handleTool = (tool, button) => {
