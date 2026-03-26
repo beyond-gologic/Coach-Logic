@@ -12,6 +12,8 @@ const languageSelect = document.getElementById("language-select");
 const tonePill = document.getElementById("tone-pill");
 const composerTonePill = document.getElementById("composer-tone-pill");
 
+const SPEEDS = [1, 1.5, 2];
+
 const state = {
   messageCount: 1,
   tone: "Professional",
@@ -20,9 +22,6 @@ const state = {
   isListening: false,
   mediaRecorder: null,
   micStream: null,
-  speakingButton: null,
-  audioContext: null,
-  audioSource: null,
   menuOwner: null,
 };
 
@@ -181,11 +180,6 @@ const createActionRow = (includeTone = true) => {
   const actions = document.createElement("div");
   actions.className = "message-actions";
   actions.innerHTML = `
-    <button class="icon-btn message-action-btn" type="button" title="Listen" data-action="listen">
-      <svg viewBox="0 0 24 24" role="img">
-        <path d="M12 4a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V7a3 3 0 0 0-3-3Zm6 8a1 1 0 1 0-2 0 4 4 0 0 1-8 0 1 1 0 0 0-2 0 6 6 0 0 0 5 5.91V20H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-2.09A6 6 0 0 0 18 12Z"></path>
-      </svg>
-    </button>
     ${includeTone ? `<button class="pill-btn tone-pill" type="button">${state.tone}</button>` : ""}
     <button class="icon-btn message-action-btn" type="button" title="Copy" data-action="copy">
       <svg viewBox="0 0 24 24" role="img">
@@ -226,6 +220,7 @@ const createAttachmentMarkup = () =>
     : "";
 
 const createAssistantReply = (text) => {
+  const seed = state.messageCount;
   const row = document.createElement("article");
   row.className = "message-row message-row-left";
   row.innerHTML = `
@@ -240,7 +235,32 @@ const createAssistantReply = (text) => {
     </div>
   `;
 
-  row.querySelector(".message-cluster").appendChild(createActionRow());
+  const cluster = row.querySelector(".message-cluster");
+  const voiceProfile =
+    personalityVoices[state.tone] ||
+    elevenLabsVoices[state.language] ||
+    elevenLabsVoices.English;
+
+  const player = createVoicePlayer({
+    getSrc: async () => {
+      const res = await fetch("/api/speak", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, language: state.language, voice_id: voiceProfile.voice_id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      const blob = await res.blob();
+      return URL.createObjectURL(blob);
+    },
+    seed,
+    variant: "assistant",
+  });
+
+  cluster.appendChild(player);
+  cluster.appendChild(createActionRow());
   return row;
 };
 
@@ -253,69 +273,195 @@ const copyText = async (text) => {
   }
 };
 
-const stopSpeech = () => {
-  if (state.audioSource) {
-    state.audioSource.stop();
-    state.audioSource = null;
-  }
-  if (state.audioContext) {
-    state.audioContext.close();
-    state.audioContext = null;
-  }
-  state.speakingButton?.classList.remove("is-active");
-  state.speakingButton = null;
-  setStatus("");
-};
+// ── VoicePlayer ──────────────────────────────────────────────
+// Reusable waveform player. Appears between each message bubble
+// and its action row. Supports lazy TTS fetch via getSrc().
 
-const handleSpeech = async (text, button) => {
-  // If already playing, stop
-  if (state.speakingButton) {
-    stopSpeech();
-    return;
-  }
+const VP_BAR_COUNT = 46;
 
-  const voiceProfile =
-    personalityVoices[state.tone] ||
-    elevenLabsVoices[state.language] ||
-    elevenLabsVoices.English;
+function vpSeededRand(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+    s ^= s >>> 16;
+    return (s >>> 0) / 0x100000000;
+  };
+}
 
-  state.speakingButton = button;
-  button.classList.add("is-active");
-  setStatus(`Generating ${state.tone} voice...`);
+function vpGenerateBars(count, seed) {
+  const rand = vpSeededRand(seed);
+  return Array.from({ length: count }, (_, i) => {
+    const t = i / (count - 1);
+    const envelope = Math.sin(Math.PI * t);
+    const f1 = 0.6 * Math.exp(-Math.pow((t - 0.3) * 6, 2));
+    const f2 = 0.8 * Math.exp(-Math.pow((t - 0.65) * 5, 2));
+    const noise = rand() * 0.25;
+    return Math.max(0.06, Math.min(1, envelope * 0.35 + f1 + f2 + noise));
+  });
+}
 
-  try {
-    const res = await fetch("/api/speak", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text,
-        language: state.language,
-        voice_id: voiceProfile.voice_id || null,
-      }),
-    });
+function vpFmtTime(secs) {
+  const s = Math.max(0, Math.floor(secs));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
+// createVoicePlayer({ src, getSrc, seed, variant })
+//   src     — direct audio URL
+//   getSrc  — async () => url  (lazy fetch, called on first play)
+//   seed    — bar-height seed (default 42)
+//   variant — 'assistant' | 'user'
+function createVoicePlayer({ src = null, getSrc = null, seed = 42, variant = "assistant" } = {}) {
+  const bars = vpGenerateBars(VP_BAR_COUNT, seed);
+
+  const makeBars = (cls) =>
+    bars.map((h) => `<div class="vp-bar ${cls}" style="--h:${h}"></div>`).join("");
+
+  const el = document.createElement("div");
+  el.className = `vp vp--${variant}`;
+  el.setAttribute("role", "group");
+  el.setAttribute("aria-label", "Voice message player");
+  el.innerHTML = `
+    <button class="vp-play" type="button" aria-label="Play">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.14v14l11-7-11-7z"/></svg>
+    </button>
+    <div class="vp-waveform" role="slider" tabindex="0"
+         aria-label="Seek audio" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div class="vp-bars">${makeBars("vp-bar--inactive")}</div>
+      <div class="vp-bars vp-bars--overlay vp-bars--hover" style="clip-path:inset(0 100% 0 0)">${makeBars("vp-bar--hover-fill")}</div>
+      <div class="vp-bars vp-bars--overlay vp-bars--progress" style="clip-path:inset(0 100% 0 0)">${makeBars("vp-bar--active")}</div>
+    </div>
+    <span class="vp-time">0:00</span>
+    <button class="vp-speed" type="button">1x</button>
+  `;
+
+  const playBtn   = el.querySelector(".vp-play");
+  const waveEl    = el.querySelector(".vp-waveform");
+  const hoverL    = el.querySelector(".vp-bars--hover");
+  const progressL = el.querySelector(".vp-bars--progress");
+  const timeEl    = el.querySelector(".vp-time");
+  const speedBtn  = el.querySelector(".vp-speed");
+
+  const audio = new Audio();
+  if (src) audio.src = src;
+  audio.preload = "metadata";
+
+  let playing  = false;
+  let duration = 0;
+  let speedIdx = 0;
+  let loading  = false;
+
+  const setProgress = (pct) => {
+    pct = Math.max(0, Math.min(1, pct));
+    progressL.style.clipPath = `inset(0 ${(1 - pct) * 100}% 0 0)`;
+    waveEl.setAttribute("aria-valuenow", Math.round(pct * 100));
+  };
+
+  const setHover = (pct) => {
+    hoverL.style.clipPath = pct === null
+      ? "inset(0 100% 0 0)"
+      : `inset(0 ${(1 - pct) * 100}% 0 0)`;
+  };
+
+  const setPlayState = (val) => {
+    playing = val;
+    el.classList.toggle("vp--playing", val);
+    playBtn.setAttribute("aria-label", val ? "Pause" : "Play");
+    playBtn.innerHTML = val
+      ? `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`
+      : `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.14v14l11-7-11-7z"/></svg>`;
+  };
+
+  audio.addEventListener("loadedmetadata", () => { duration = audio.duration || 0; });
+  audio.addEventListener("durationchange",  () => { duration = audio.duration || 0; });
+  audio.addEventListener("timeupdate", () => {
+    timeEl.textContent = vpFmtTime(audio.currentTime);
+    if (duration) setProgress(audio.currentTime / duration);
+  });
+  audio.addEventListener("play",  () => setPlayState(true));
+  audio.addEventListener("pause", () => setPlayState(false));
+  audio.addEventListener("ended", () => {
+    setPlayState(false);
+    setProgress(0);
+    timeEl.textContent = "0:00";
+  });
+
+  const ensureSrc = async () => {
+    if (audio.src && audio.src !== window.location.href) return true;
+    if (!getSrc || loading) return false;
+    loading = true;
+    playBtn.disabled = true;
+    try {
+      const url = await getSrc();
+      audio.src = url;
+      await new Promise((res, rej) => {
+        audio.addEventListener("canplay", res, { once: true });
+        audio.addEventListener("error",   rej, { once: true });
+      });
+      return true;
+    } catch (err) {
+      setStatus(`Voice error: ${err.message}`);
+      return false;
+    } finally {
+      loading = false;
+      playBtn.disabled = false;
     }
+  };
 
-    const arrayBuffer = await res.arrayBuffer();
-    state.audioContext = new AudioContext();
-    const audioBuffer = await state.audioContext.decodeAudioData(arrayBuffer);
-    state.audioSource = state.audioContext.createBufferSource();
-    state.audioSource.buffer = audioBuffer;
-    state.audioSource.connect(state.audioContext.destination);
+  playBtn.addEventListener("click", async () => {
+    const ready = await ensureSrc();
+    if (!ready) return;
+    playing ? audio.pause() : audio.play().catch(() => {});
+  });
 
-    state.audioSource.onended = () => {
-      stopSpeech();
-    };
+  waveEl.addEventListener("click", async (e) => {
+    const ready = await ensureSrc();
+    if (!ready || !duration) return;
+    const rect = waveEl.getBoundingClientRect();
+    audio.currentTime = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * duration;
+  });
 
-    state.audioSource.start();
-    setStatus(`Playing ${state.language} voice...`);
-  } catch (err) {
-    stopSpeech();
-    setStatus(`Voice error: ${err.message}`);
-  }
+  waveEl.addEventListener("mousemove", (e) => {
+    const rect = waveEl.getBoundingClientRect();
+    setHover(Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)));
+  });
+  waveEl.addEventListener("mouseleave", () => setHover(null));
+
+  waveEl.addEventListener("keydown", (e) => {
+    if (!duration) return;
+    if (e.key === "ArrowRight") audio.currentTime = Math.min(duration, audio.currentTime + 5);
+    if (e.key === "ArrowLeft")  audio.currentTime = Math.max(0, audio.currentTime - 5);
+  });
+
+  speedBtn.addEventListener("click", () => {
+    speedIdx = (speedIdx + 1) % SPEEDS.length;
+    const s = SPEEDS[speedIdx];
+    speedBtn.textContent = `${s}x`;
+    audio.playbackRate = s;
+  });
+
+  return el;
+}
+
+// Creates a right-aligned user message row that embeds a VoicePlayer.
+const createUserVoiceMessage = (objectUrl) => {
+  const row = document.createElement("article");
+  row.className = "message-row message-row-right";
+
+  const bubble = document.createElement("div");
+  bubble.className = "message-bubble bubble-user vp-user-bubble";
+
+  const player = createVoicePlayer({ src: objectUrl, seed: Date.now() & 0xffffffff, variant: "user" });
+  bubble.appendChild(player);
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar avatar-sm avatar-user";
+  avatar.setAttribute("aria-hidden", "true");
+  avatar.innerHTML = `<span class="avatar-face"></span>`;
+
+  row.appendChild(bubble);
+  row.appendChild(avatar);
+  return row;
 };
 
 const wrapSelection = (prefix, suffix = prefix) => {
@@ -483,6 +629,16 @@ const startDictation = async (button) => {
 
       try {
         const blob = new Blob(chunks, { type: mimeType });
+        const objectUrl = URL.createObjectURL(blob);
+
+        // Post user voice bubble immediately so the audio is visible right away
+        const voiceRow = createUserVoiceMessage(objectUrl);
+        thread.appendChild(voiceRow);
+        state.messageCount += 1;
+        updateProgress();
+        scrollToBottom();
+
+        // Transcribe in background, then trigger reply
         const formData = new FormData();
         formData.append("file", blob, mimeType === "audio/webm" ? "audio.webm" : "audio.mp4");
         formData.append("language_code", { English:"en", Spanish:"es", French:"fr", Portuguese:"pt", German:"de" }[state.language] || "en");
@@ -493,13 +649,12 @@ const startDictation = async (button) => {
 
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
         if (!data.transcript) {
-          setStatus("No speech detected — try again");
+          setStatus("No speech detected");
           return;
         }
 
-        input.value = input.value ? `${input.value} ${data.transcript}` : data.transcript;
-        autosizeInput();
-        setStatus("Voice note added");
+        setStatus("");
+        window.setTimeout(simulateReply, 450);
       } catch (err) {
         setStatus(`Transcription error: ${err.message}`);
       }
@@ -569,11 +724,6 @@ thread.addEventListener("click", async (event) => {
 
   if (action === "copy") {
     await copyText(text);
-    return;
-  }
-
-  if (action === "listen") {
-    handleSpeech(text, actionButton);
     return;
   }
 
