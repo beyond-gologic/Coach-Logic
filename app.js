@@ -212,6 +212,7 @@ const createActionRow = () => {
   const actions = document.createElement("div");
   actions.className = "message-actions";
   actions.innerHTML = `
+    <button class="pill-btn tone-pill" type="button" title="Change personality">${state.tone}</button>
     <button class="icon-btn message-action-btn" type="button" title="Copy" data-action="copy">
       <svg viewBox="0 0 24 24" role="img">
         <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1Zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H10V7h9v14Z"></path>
@@ -642,6 +643,7 @@ const setLanguage = (value) => {
 const setTone = (value) => {
   state.tone = value;
   if (personalitySelect) personalitySelect.value = value;
+  document.querySelectorAll(".tone-pill").forEach((p) => (p.textContent = value));
   setStatus(`Personality: ${value}`);
 };
 
@@ -834,7 +836,11 @@ const handleTool = (tool, button) => {
 
 thread.addEventListener("click", async (event) => {
   const actionButton = event.target.closest(".message-action-btn");
-  if (!actionButton) return;
+  if (!actionButton) {
+    const toneButton = event.target.closest(".tone-pill");
+    if (toneButton) openMenu("tone", toneButton, menus.tone, setTone);
+    return;
+  }
 
   const bubble = actionButton.closest(".message-cluster")?.querySelector(".message-bubble");
   const text = bubble?.innerText.trim() || "";
@@ -931,7 +937,7 @@ input.addEventListener("keydown", (event) => {
 input.addEventListener("input", autosizeInput);
 
 document.addEventListener("click", (event) => {
-  if (!event.target.closest(".floating-menu")) {
+  if (!event.target.closest(".floating-menu") && !event.target.closest(".tone-pill")) {
     closeMenu();
   }
 });
