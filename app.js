@@ -8,6 +8,7 @@ const composerMeta = document.getElementById("composer-meta");
 const attachmentInput = document.getElementById("attachment-input");
 const attachmentList = document.getElementById("attachment-list");
 const floatingMenu = document.getElementById("floating-menu");
+document.body.appendChild(floatingMenu); // move out of any transformed ancestor so position:fixed works correctly
 const languageSelect = document.getElementById("language-select");
 const personalitySelect = document.getElementById("personality-select");
 

@@ -541,7 +541,6 @@ button { border: 0; background: none; padding: 0; cursor: pointer; }
   border-radius: 10px;
   background: #fff;
   box-shadow: 0 12px 28px rgba(100,110,140,0.12);
-  transform: translateY(-100%);
 }
 
 .menu-item {
