@@ -656,6 +656,88 @@ const stopDictation = () => {
   document.querySelectorAll('[data-tool="mic"]').forEach((el) => el.classList.remove("is-active"));
 };
 
+const dismissAudioPreview = () => {
+  document.getElementById("audio-preview")?.remove();
+};
+
+const sendAudioMessage = async (blob, mimeType, objectUrl) => {
+  dismissAudioPreview();
+
+  // Post voice bubble immediately
+  const voiceRow = createUserVoiceMessage(objectUrl);
+  thread.appendChild(voiceRow);
+  state.messageCount += 1;
+  updateProgress();
+  scrollToBottom();
+
+  // Transcribe, then get Groq reply
+  try {
+    setStatus("Transcribing...");
+    const formData = new FormData();
+    formData.append("file", blob, mimeType === "audio/webm" ? "audio.webm" : "audio.mp4");
+    formData.append("model_id", "scribe_v1");
+
+    const res = await fetch("/api/transcribe", { method: "POST", body: formData });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    if (!data.transcript) {
+      setStatus("No speech detected");
+      return;
+    }
+
+    if (data.language_code) {
+      const detected = langCodeMap[data.language_code.slice(0, 2)];
+      if (detected && detected !== state.language) setLanguage(detected);
+    }
+
+    setStatus("");
+    window.setTimeout(() => fetchReply(data.transcript), 450);
+  } catch (err) {
+    setStatus(`Transcription error: ${err.message}`);
+  }
+};
+
+const showAudioPreview = (blob, mimeType) => {
+  dismissAudioPreview(); // clear any existing preview
+
+  const objectUrl = URL.createObjectURL(blob);
+
+  const panel = document.createElement("div");
+  panel.id = "audio-preview";
+  panel.className = "audio-preview";
+
+  const player = createVoicePlayer({ src: objectUrl, seed: 7, variant: "assistant" });
+  player.classList.add("audio-preview-player");
+
+  const sendBtn = document.createElement("button");
+  sendBtn.type = "button";
+  sendBtn.className = "audio-preview-btn audio-preview-send";
+  sendBtn.title = "Send";
+  sendBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.01 19 20 12 4.01 5 4 10l11 2-11 2 .01 5Z"/></svg>`;
+
+  const discardBtn = document.createElement("button");
+  discardBtn.type = "button";
+  discardBtn.className = "audio-preview-btn audio-preview-discard";
+  discardBtn.title = "Discard";
+  discardBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12ZM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4Z"/></svg>`;
+
+  panel.appendChild(player);
+  panel.appendChild(sendBtn);
+  panel.appendChild(discardBtn);
+
+  // Insert inside the form, above the composer tools
+  const composerTools = document.querySelector(".composer-tools");
+  composerTools.insertAdjacentElement("beforebegin", panel);
+
+  sendBtn.addEventListener("click", () => sendAudioMessage(blob, mimeType, objectUrl));
+  discardBtn.addEventListener("click", () => {
+    URL.revokeObjectURL(objectUrl);
+    dismissAudioPreview();
+    setStatus("Recording discarded");
+  });
+};
+
 const startDictation = async (button) => {
   if (!navigator.mediaDevices?.getUserMedia) {
     setStatus("Microphone not supported in this browser");
@@ -684,53 +766,17 @@ const startDictation = async (button) => {
       if (e.data.size > 0) chunks.push(e.data);
     };
 
-    recorder.onstop = async () => {
+    recorder.onstop = () => {
       stopDictation();
-      setStatus("Transcribing...");
+      const blob = new Blob(chunks, { type: mimeType });
 
-      try {
-        const blob = new Blob(chunks, { type: mimeType });
-
-        if (blob.size < 1000) {
-          setStatus("No audio captured — try again");
-          return;
-        }
-
-        const objectUrl = URL.createObjectURL(blob);
-
-        // Post user voice bubble immediately so the audio is visible right away
-        const voiceRow = createUserVoiceMessage(objectUrl);
-        thread.appendChild(voiceRow);
-        state.messageCount += 1;
-        updateProgress();
-        scrollToBottom();
-
-        // Transcribe in background, then trigger reply
-        const formData = new FormData();
-        formData.append("file", blob, mimeType === "audio/webm" ? "audio.webm" : "audio.mp4");
-        // No language_code — let ElevenLabs Scribe auto-detect the spoken language
-        formData.append("model_id", "scribe_v1");
-
-        const res = await fetch("/api/transcribe", { method: "POST", body: formData });
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-        if (!data.transcript) {
-          setStatus("No speech detected");
-          return;
-        }
-
-        // Auto-switch UI language to match what was spoken
-        if (data.language_code) {
-          const detected = langCodeMap[data.language_code.slice(0, 2)];
-          if (detected && detected !== state.language) setLanguage(detected);
-        }
-
-        setStatus("");
-        window.setTimeout(() => fetchReply(data.transcript), 450);
-      } catch (err) {
-        setStatus(`Transcription error: ${err.message}`);
+      if (blob.size < 1000) {
+        setStatus("No audio captured — try again");
+        return;
       }
+
+      setStatus("");
+      showAudioPreview(blob, mimeType);
     };
 
     recorder.start(200); // timeslice ensures ondataavailable fires even for short recordings
