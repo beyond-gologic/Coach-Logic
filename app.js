@@ -23,6 +23,7 @@ const state = {
   mediaRecorder: null,
   micStream: null,
   menuOwner: null,
+  history: [], // conversation history sent to Groq
 };
 
 const menus = {
@@ -577,12 +578,50 @@ const applyFormatting = (format) => {
   setStatus("Formatting cleared");
 };
 
-const simulateReply = () => {
-  const reply = assistantReplies[state.language] || assistantReplies.English;
-  thread.appendChild(createAssistantReply(reply));
-  state.messageCount += 1;
-  updateProgress();
+const fetchReply = async (userMessage) => {
+  // Show typing indicator
+  const typing = document.createElement("div");
+  typing.className = "typing-indicator";
+  typing.innerHTML = `<span></span><span></span><span></span>`;
+  thread.appendChild(typing);
   scrollToBottom();
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: userMessage,
+        language: state.language,
+        tone: state.tone,
+        history: state.history,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    const reply = data.reply;
+
+    // Update conversation history
+    state.history.push({ role: "user", content: userMessage });
+    state.history.push({ role: "assistant", content: reply });
+
+    typing.remove();
+    thread.appendChild(createAssistantReply(reply));
+    state.messageCount += 1;
+    updateProgress();
+    scrollToBottom();
+  } catch (err) {
+    typing.remove();
+    // Fall back to static reply so the UI never breaks
+    const fallback = assistantReplies[state.language] || assistantReplies.English;
+    thread.appendChild(createAssistantReply(fallback));
+    state.messageCount += 1;
+    updateProgress();
+    scrollToBottom();
+    setStatus(`AI error: ${err.message}`);
+  }
 };
 
 const setLanguage = (value) => {
@@ -688,7 +727,7 @@ const startDictation = async (button) => {
         }
 
         setStatus("");
-        window.setTimeout(simulateReply, 450);
+        window.setTimeout(() => fetchReply(data.transcript), 450);
       } catch (err) {
         setStatus(`Transcription error: ${err.message}`);
       }
@@ -826,7 +865,7 @@ form.addEventListener("submit", (event) => {
   updateAttachmentList();
   closeMenu();
   scrollToBottom();
-  window.setTimeout(simulateReply, 450);
+  window.setTimeout(() => fetchReply(text), 450);
 });
 
 input.addEventListener("keydown", (event) => {
