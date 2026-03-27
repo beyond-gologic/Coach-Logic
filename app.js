@@ -142,6 +142,7 @@ const scrollToBottom = () => {
 
 const closeMenu = () => {
   floatingMenu.hidden = true;
+  floatingMenu.style.visibility = "hidden";
   floatingMenu.innerHTML = "";
   state.menuOwner = null;
 };
@@ -161,9 +162,12 @@ const openMenu = (owner, anchor, items, onSelect) => {
     )
     .join("");
 
+  // Render off-screen first so we can measure height before placing
+  floatingMenu.style.visibility = "hidden";
+  floatingMenu.style.top = "-9999px";
+  floatingMenu.style.left = "-9999px";
+  floatingMenu.style.transform = "none";
   floatingMenu.hidden = false;
-  floatingMenu.style.left = `${Math.max(12, Math.min(rect.left, window.innerWidth - 180))}px`;
-  floatingMenu.style.top = `${rect.top - 8}px`;
   floatingMenu.dataset.owner = owner;
 
   floatingMenu.querySelectorAll(".menu-item").forEach((button) => {
@@ -173,11 +177,23 @@ const openMenu = (owner, anchor, items, onSelect) => {
     });
   });
 
+  // Measure after paint, then snap into place in one frame
   requestAnimationFrame(() => {
-    const menuRect = floatingMenu.getBoundingClientRect();
-    const showAbove = rect.top >= menuRect.height + 12;
-    floatingMenu.style.transform = showAbove ? "translateY(-100%)" : "translateY(0)";
-    floatingMenu.style.top = showAbove ? `${rect.top - 8}px` : `${rect.bottom + 8}px`;
+    const menuH = floatingMenu.offsetHeight;
+    const menuW = floatingMenu.offsetWidth;
+    const spaceAbove = rect.top;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const showAbove = spaceAbove >= menuH + 8 || spaceAbove >= spaceBelow;
+
+    const top = showAbove
+      ? rect.top - menuH - 6
+      : rect.bottom + 6;
+    const left = Math.max(8, Math.min(rect.left, window.innerWidth - menuW - 8));
+
+    floatingMenu.style.top = `${top}px`;
+    floatingMenu.style.left = `${left}px`;
+    floatingMenu.style.transform = "none";
+    floatingMenu.style.visibility = "visible";
   });
 };
 
@@ -212,7 +228,10 @@ const createActionRow = () => {
   const actions = document.createElement("div");
   actions.className = "message-actions";
   actions.innerHTML = `
-    <button class="pill-btn tone-pill" type="button" title="Change personality">${state.tone}</button>
+    <button class="pill-btn tone-pill" type="button" title="Change personality">
+      <span class="tone-pill-label">${state.tone}</span>
+      <svg class="tone-pill-chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
     <button class="icon-btn message-action-btn" type="button" title="Copy" data-action="copy">
       <svg viewBox="0 0 24 24" role="img">
         <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1Zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H10V7h9v14Z"></path>
@@ -643,7 +662,7 @@ const setLanguage = (value) => {
 const setTone = (value) => {
   state.tone = value;
   if (personalitySelect) personalitySelect.value = value;
-  document.querySelectorAll(".tone-pill").forEach((p) => (p.textContent = value));
+  document.querySelectorAll(".tone-pill .tone-pill-label").forEach((p) => (p.textContent = value));
   setStatus(`Personality: ${value}`);
 };
 

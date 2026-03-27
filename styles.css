@@ -318,6 +318,18 @@ button { border: 0; background: none; padding: 0; cursor: pointer; }
 
 .pill-btn:hover { background: #f5f6fb; color: #555b6e; }
 
+.tone-pill-chevron {
+  width: 8px;
+  height: 5px;
+  margin-left: 4px;
+  flex-shrink: 0;
+  transition: transform 150ms ease;
+}
+.tone-pill:hover .tone-pill-chevron,
+.tone-pill[aria-expanded="true"] .tone-pill-chevron {
+  transform: rotate(180deg);
+}
+
 /* ── Attachments ─────────────────────────────────────────────── */
 .message-attachments {
   display: flex;
