@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import VoicePlayer from "./VoicePlayer";
 import { cn } from "@/lib/utils";
-import { PERSONALITIES, type Personality } from "@/lib/voices";
+import { PERSONALITIES, getVoiceId, type Personality } from "@/lib/voices";
 
 interface Message {
   id: string;
@@ -59,7 +59,7 @@ export default function MessageBubble({
     const res = await fetch("/api/speak", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: message.text, voice_id: message.voiceId }),
+      body: JSON.stringify({ text: message.text, voice_id: getVoiceId(tone as Personality, voiceGender) }),
     });
     if (!res.ok) throw new Error("TTS failed");
     const blob = await res.blob();
