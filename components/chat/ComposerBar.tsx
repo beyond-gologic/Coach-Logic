@@ -144,8 +144,10 @@ export default function ComposerBar({
     "w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors";
 
   return (
-    <div className="flex-shrink-0 border-t border-border bg-white/80 backdrop-blur-lg">
+    <div className="flex-shrink-0 bg-white/80 backdrop-blur-lg">
       <div className="max-w-3xl mx-auto px-4 py-3 space-y-2">
+        {/* Composer box */}
+        <div className="rounded-xl border border-border bg-white px-4 pt-3 pb-2 space-y-2">
         {/* Textarea */}
         <textarea
           ref={textareaRef}
@@ -289,6 +291,7 @@ export default function ComposerBar({
             </button>
           </div>
         </div>
+        </div>{/* end composer box */}
 
         {/* Hint */}
         <p className="text-[11px] text-muted-foreground/60 select-none">
