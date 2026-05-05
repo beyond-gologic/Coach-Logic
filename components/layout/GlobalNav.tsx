@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Bell,
   User,
+  ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,15 @@ export default function GlobalNav() {
           <span className="font-bricolage font-bold text-lg text-foreground tracking-tight">
             GoTackle
           </span>
+        </Link>
+
+        {/* Back to Coach Logic */}
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border border-border hover:border-primary/50 px-3 py-1.5 rounded-full transition-colors mr-2"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Coach Logic
         </Link>
 
         {/* Right icons */}
