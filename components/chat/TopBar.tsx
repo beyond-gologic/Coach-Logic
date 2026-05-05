@@ -19,10 +19,10 @@ export default function TopBar({ messageCount, onNewChat }: TopBarProps) {
       {/* Brand */}
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0">
-          <span className="text-primary text-sm font-bricolage font-bold">CL</span>
+          <span className="text-primary text-sm font-bold">CL</span>
         </div>
         <div className="min-w-0">
-          <p className="font-bricolage font-bold text-base text-foreground leading-tight tracking-tight">
+          <p className="font-bold text-base text-foreground leading-tight tracking-tight">
             Coach Logic
           </p>
           <p className="text-xs text-muted-foreground leading-tight">AI Business Coach</p>

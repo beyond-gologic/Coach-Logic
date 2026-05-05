@@ -312,7 +312,7 @@ export default function ChatShell({
       {showNewChatConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4 space-y-4">
-            <h2 className="font-bricolage font-bold text-lg text-foreground">Start a new chat?</h2>
+            <h2 className="font-bold text-lg text-foreground">Start a new chat?</h2>
             <p className="text-sm text-muted-foreground">Your current conversation will be saved and a fresh session will begin.</p>
             <div className="flex gap-3 justify-end">
               <button
@@ -341,7 +341,7 @@ export default function ChatShell({
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-3xl mx-auto px-4 py-6">
               <div className="text-center mb-8">
-                <h1 className="font-bricolage font-bold text-2xl text-foreground tracking-tight">
+                <h1 className="font-bold text-2xl text-foreground tracking-tight">
                   {headerTitle}
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1">

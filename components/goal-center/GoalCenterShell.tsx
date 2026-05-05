@@ -17,7 +17,7 @@ export default function GoalCenterShell() {
           {/* Avatar with online dot */}
           <div className="relative flex-shrink-0">
             <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center">
-              <span className="text-primary text-sm font-bricolage font-bold">CL</span>
+              <span className="text-primary text-sm font-bold">CL</span>
             </div>
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
           </div>

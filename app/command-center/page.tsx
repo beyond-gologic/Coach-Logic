@@ -24,7 +24,7 @@ export default function CommandCenterPage() {
         <div className="border border-[#E5E7EB] rounded-xl p-4 flex items-center gap-4 bg-white shadow-sm">
           <div className="relative flex-shrink-0">
             <div className="w-14 h-14 rounded-full overflow-hidden bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
-              <span className="text-primary font-bricolage font-bold text-base">CL</span>
+              <span className="text-primary font-bold text-base">CL</span>
             </div>
             <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-white" />
           </div>
@@ -43,7 +43,7 @@ export default function CommandCenterPage() {
         {/* Welcome header */}
         <div className="flex items-start justify-between pt-1">
           <div>
-            <h1 className="font-bricolage font-bold text-2xl text-foreground">Welcome back, Tyler!</h1>
+            <h1 className="font-bold text-2xl text-foreground">Welcome back, Tyler!</h1>
             <p className="text-sm text-muted-foreground mt-0.5">Here is what has happened recently</p>
           </div>
           <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#E5E7EB] text-muted-foreground hover:bg-gray-50 transition-colors mt-1">
@@ -57,7 +57,7 @@ export default function CommandCenterPage() {
           style={{ background: "linear-gradient(135deg, #5b3cf5 0%, #6d4ef7 50%, #7c5cfa 100%)" }}
         >
           <div>
-            <h2 className="font-bricolage font-bold text-4xl text-white leading-tight">
+            <h2 className="font-bold text-4xl text-white leading-tight">
               Touchdowns<br />Completed
             </h2>
             <p className="text-white/70 mt-2 text-base">Let&apos;s build your first Touchdown</p>
@@ -78,7 +78,7 @@ export default function CommandCenterPage() {
               className="relative w-32 h-32 rounded-3xl flex items-center justify-center"
               style={{ background: "rgba(60, 30, 180, 0.7)" }}
             >
-              <span className="font-bricolage font-bold text-7xl text-white leading-none select-none">0</span>
+              <span className="font-bold text-7xl text-white leading-none select-none">0</span>
             </div>
           </div>
         </div>
@@ -191,7 +191,7 @@ export default function CommandCenterPage() {
         {/* Your Stats */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-bricolage font-bold text-xl text-foreground">Your Stats</h2>
+            <h2 className="font-bold text-xl text-foreground">Your Stats</h2>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
                 <span className="text-xs text-muted-foreground">Share with consultant</span>

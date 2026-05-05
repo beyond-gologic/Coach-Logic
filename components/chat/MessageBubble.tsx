@@ -94,7 +94,7 @@ export default function MessageBubble({
     <div className="flex gap-3 items-start">
       {/* Avatar */}
       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mt-1">
-        <span className="text-primary text-xs font-bricolage font-bold">CL</span>
+        <span className="text-primary text-xs font-bold">CL</span>
       </div>
 
       <div className="flex-1 min-w-0 max-w-[80%]">

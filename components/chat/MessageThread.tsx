@@ -55,7 +55,7 @@ export default function MessageThread({
       {status && (
         <div className="flex gap-3 items-start">
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center">
-            <span className="text-primary text-xs font-bricolage font-bold">CL</span>
+            <span className="text-primary text-xs font-bold">CL</span>
           </div>
           <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
             <span className="flex gap-1">

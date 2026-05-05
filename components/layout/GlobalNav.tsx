@@ -35,7 +35,7 @@ export default function GlobalNav() {
               <path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
             </svg>
           </div>
-          <span className="font-bricolage font-bold text-lg text-foreground tracking-tight">
+          <span className="font-bold text-lg text-foreground tracking-tight">
             GoTackle
           </span>
         </Link>

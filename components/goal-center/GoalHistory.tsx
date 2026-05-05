@@ -33,7 +33,7 @@ export default function GoalHistory({ onClose, lastSaved = "Today, 9:04 AM" }: G
     <div className="flex flex-col h-full bg-white border-l border-border w-[320px] flex-shrink-0">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-        <h2 className="font-bricolage font-bold text-base text-foreground">Goal History</h2>
+        <h2 className="font-bold text-base text-foreground">Goal History</h2>
         <button
           onClick={onClose}
           className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground transition-colors"
