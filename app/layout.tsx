@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
+import GlobalNav from "@/components/layout/GlobalNav";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -10,7 +11,7 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: "Coach Logic — AI Business Coach",
+  title: "GoTackle — Coach Logic",
   description: "Your personal AI executive business coach",
 };
 
@@ -21,8 +22,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={bricolage.variable}>
-      <body className="bg-background text-foreground antialiased h-full">
-        {children}
+      <body className="bg-background text-foreground antialiased h-screen flex flex-col overflow-hidden">
+        <GlobalNav />
+        <main className="flex-1 overflow-hidden flex flex-col">
+          {children}
+        </main>
       </body>
     </html>
   );

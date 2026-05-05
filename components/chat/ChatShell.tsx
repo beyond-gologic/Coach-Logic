@@ -55,7 +55,7 @@ function loadPersistedChat() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"); } catch { return null; }
 }
 
-export default function ChatShell() {
+export default function ChatShell({ hideTopBar = false }: { hideTopBar?: boolean }) {
   const INITIAL_MESSAGES: Message[] = [{ id: mkId(), role: "assistant", text: INITIAL_ASSISTANT_TEXT, seed: 1 }];
   const INITIAL_HISTORY: HistoryEntry[] = [{ role: "assistant", content: INITIAL_ASSISTANT_TEXT }];
 
@@ -284,11 +284,13 @@ export default function ChatShell() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen">
-      <TopBar
-        messageCount={messageCount}
-        onNewChat={() => setShowNewChatConfirm(true)}
-      />
+    <div className="flex flex-col h-full">
+      {!hideTopBar && (
+        <TopBar
+          messageCount={messageCount}
+          onNewChat={() => setShowNewChatConfirm(true)}
+        />
+      )}
 
       {/* New chat confirmation */}
       {showNewChatConfirm && (
