@@ -28,7 +28,7 @@ export default function GlobalNav() {
       {/* Top row */}
       <div className="flex items-center justify-between px-6 h-14">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" title="Back to Coach Logic" className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
             <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg">
               <path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>

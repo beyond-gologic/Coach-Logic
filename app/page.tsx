@@ -1,5 +1,5 @@
-import GoalCenterShell from "@/components/goal-center/GoalCenterShell";
+import ChatShell from "@/components/chat/ChatShell";
 
 export default function Home() {
-  return <GoalCenterShell />;
+  return <ChatShell />;
 }
