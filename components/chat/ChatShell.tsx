@@ -152,7 +152,7 @@ export default function ChatShell() {
         { role: "user", content: userMessage },
         { role: "assistant", content: reply },
       ]);
-      setMessageCount((n) => n + 1);
+      setMessageCount((n: number) => n + 1);
     },
     [language, tone, voiceGender]
   );
@@ -169,7 +169,7 @@ export default function ChatShell() {
     const userMsg: Message = { id: mkId(), role: "user", text, seed: Date.now() & 0xffffffff };
     setMessages((prev) => [...prev, userMsg]);
     setHistory((prev) => [...prev, { role: "user", content: text }]);
-    setMessageCount((n) => n + 1);
+    setMessageCount((n: number) => n + 1);
     setInputValue("");
 
     fetchReply(text, [...history, { role: "user", content: text }]);
@@ -237,7 +237,7 @@ export default function ChatShell() {
       seed: Date.now() & 0xffffffff,
     };
     setMessages((prev) => [...prev, voiceMsg]);
-    setMessageCount((n) => n + 1);
+    setMessageCount((n: number) => n + 1);
 
     try {
       const formData = new FormData();
