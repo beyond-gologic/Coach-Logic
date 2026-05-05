@@ -11,6 +11,11 @@ export default function CommandCenterPage() {
   const [shareStats, setShareStats] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
 
+  const openChat = () => {
+    localStorage.removeItem("coach-logic-widget");
+    setChatOpen(true);
+  };
+
   return (
     <div className="bg-white min-h-full">
       <div className="max-w-5xl mx-auto px-8 py-6 space-y-5 pb-28">
@@ -259,7 +264,7 @@ export default function CommandCenterPage() {
       {/* Floating chat widget */}
       <div className="fixed bottom-6 right-6 z-40">
         <button
-          onClick={() => setChatOpen(true)}
+          onClick={openChat}
           className="hover:scale-105 transition-transform drop-shadow-xl"
           aria-label="Open chat"
         >
