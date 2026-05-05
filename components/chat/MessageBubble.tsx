@@ -20,6 +20,7 @@ interface Message {
   text?: string;
   audioUrl?: string;
   seed: number;
+  voiceId?: string;
 }
 
 interface MessageBubbleProps {
@@ -58,7 +59,7 @@ export default function MessageBubble({
     const res = await fetch("/api/speak", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: message.text, voice_id: undefined }),
+      body: JSON.stringify({ text: message.text, voice_id: message.voiceId }),
     });
     if (!res.ok) throw new Error("TTS failed");
     const blob = await res.blob();

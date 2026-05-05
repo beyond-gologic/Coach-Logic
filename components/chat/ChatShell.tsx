@@ -49,11 +49,9 @@ const mkId = () => `msg-${Date.now()}-${++msgCounter}`;
 export default function ChatShell() {
   const [messages, setMessages] = useState<Message[]>([
     { id: mkId(), role: "assistant", text: INITIAL_ASSISTANT_TEXT, seed: 1 },
-    { id: mkId(), role: "user", text: "Hello, and thank you.", seed: 2 },
   ]);
   const [history, setHistory] = useState<HistoryEntry[]>([
     { role: "assistant", content: INITIAL_ASSISTANT_TEXT },
-    { role: "user", content: "Hello, and thank you." },
   ]);
   const [tone, setToneState] = useState<Personality>("Professional");
   const [language, setLanguageState] = useState<string>("English");
