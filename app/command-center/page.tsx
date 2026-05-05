@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { MoreHorizontal, Plus, Pencil, Info } from "lucide-react";
+import { MoreHorizontal, Plus, Pencil, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ChatShell from "@/components/chat/ChatShell";
 
 export default function CommandCenterPage() {
   const [playsTab, setPlaysTab] = useState<"todo" | "inprogress" | "blocked">("todo");
   const [meetingsOnly, setMeetingsOnly] = useState(false);
   const [shareStats, setShareStats] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   return (
     <div className="bg-white min-h-full">
@@ -224,9 +226,34 @@ export default function CommandCenterPage() {
         </div>
       </div>
 
+      {/* Chat drawer */}
+      {chatOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/20"
+            onClick={() => setChatOpen(false)}
+          />
+          {/* Panel */}
+          <div className="relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col">
+            <button
+              onClick={() => setChatOpen(false)}
+              className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <ChatShell hideTopBar storageKey="coach-logic-widget" />
+          </div>
+        </div>
+      )}
+
       {/* Floating chat widget */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <button className="hover:scale-105 transition-transform drop-shadow-xl" aria-label="Open chat">
+      <div className="fixed bottom-6 right-6 z-40">
+        <button
+          onClick={() => setChatOpen(true)}
+          className="hover:scale-105 transition-transform drop-shadow-xl"
+          aria-label="Open chat"
+        >
           <svg width="64" height="64" viewBox="0 0 101 101" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="0.5" y="8.5" width="92" height="92" rx="22.75" fill="url(#paint0_cc)"/>
             <rect x="0.5" y="8.5" width="92" height="92" rx="22.75" stroke="#9482FF"/>
