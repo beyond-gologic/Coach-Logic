@@ -72,7 +72,7 @@ export default function GlobalNav() {
       {/* Tab row */}
       <div className="flex items-end px-6 gap-0">
         {NAV_TABS.map((tab) => {
-          const active = pathname === tab.href || (tab.href === "/goal-center" && pathname === "/");
+          const active = pathname === tab.href;
           return (
             <Link
               key={tab.href}
