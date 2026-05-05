@@ -18,6 +18,7 @@ interface MessageThreadProps {
   voiceGender: "female" | "male";
   onToneChange: (tone: Personality) => void;
   onToggleGender: () => void;
+  voiceModeActive?: boolean;
   status?: string;
 }
 
@@ -27,6 +28,7 @@ export default function MessageThread({
   voiceGender,
   onToneChange,
   onToggleGender,
+  voiceModeActive = false,
   status,
 }: MessageThreadProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -45,6 +47,7 @@ export default function MessageThread({
           voiceGender={voiceGender}
           onToneChange={onToneChange}
           onToggleGender={onToggleGender}
+          voiceModeActive={voiceModeActive}
         />
       ))}
 

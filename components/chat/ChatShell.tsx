@@ -293,6 +293,7 @@ export default function ChatShell() {
                 status={isTyping ? "Thinking…" : undefined}
                 onToneChange={setTone}
                 onToggleGender={() => setVoiceGender((g) => (g === "female" ? "male" : "female"))}
+                voiceModeActive={isVoiceMode}
               />
               <div ref={threadEndRef} />
             </div>

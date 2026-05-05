@@ -29,6 +29,7 @@ interface MessageBubbleProps {
   voiceGender: "female" | "male";
   onToneChange: (tone: Personality) => void;
   onToggleGender: () => void;
+  voiceModeActive?: boolean;
 }
 
 export default function MessageBubble({
@@ -37,6 +38,7 @@ export default function MessageBubble({
   voiceGender,
   onToneChange,
   onToggleGender,
+  voiceModeActive = false,
 }: MessageBubbleProps) {
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState<"like" | "dislike" | null>(null);
@@ -100,7 +102,7 @@ export default function MessageBubble({
           <p className="text-sm text-foreground leading-relaxed">{message.text}</p>
 
           {/* Voice player */}
-          <VoicePlayer getSrc={getTtsSrc()} seed={message.seed} variant="assistant" />
+          {!voiceModeActive && <VoicePlayer getSrc={getTtsSrc()} seed={message.seed} variant="assistant" />}
         </div>
 
         {/* Action row */}
