@@ -156,7 +156,7 @@ export default function VoiceMode({
         else if (speechDetected) { silenceMs += 16; }
         if ((speechDetected && silenceMs >= SILENCE_TIMEOUT) || Date.now() - startTime > MAX_DURATION) {
           audioCtx.close();
-          if (recorder.state !== "inactive") recorder.stop();
+          if ((recorder.state as string) !== "inactive") recorder.stop();
           return;
         }
         setTimeout(vadLoop, 16);
