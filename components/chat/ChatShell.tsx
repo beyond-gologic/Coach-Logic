@@ -33,6 +33,7 @@ const FALLBACK_REPLIES: Record<string, string> = {
   French: "Merci pour votre partage. Je l'enregistre pour adapter les prochaines questions d'onboarding à votre entreprise.",
   Portuguese: "Obrigado por compartilhar. Estou registrando isso para adaptar as próximas perguntas de onboarding ao seu negócio.",
   German: "Danke fürs Teilen. Ich erfasse das, um die nächsten Onboarding-Fragen auf Ihr Unternehmen abzustimmen.",
+  Tagalog: "Salamat sa pagbabahagi. Itinatala ko ito upang maiakma ang mga susunod na tanong para sa iyong negosyo.",
 };
 
 const LANG_CODE_MAP: Record<string, string> = {

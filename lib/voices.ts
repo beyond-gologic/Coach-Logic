@@ -50,6 +50,7 @@ export const LANGUAGES = [
   "English",
   "Spanish",
   "Arabic",
+  "Tagalog",
 ] as const;
 
 export type Language = (typeof LANGUAGES)[number];

@@ -43,6 +43,7 @@ const PLACEHOLDERS: Record<string, string> = {
   Portuguese: "Envie uma mensagem para o Coach Logic…",
   German: "Nachricht an Coach Logic…",
   Italian: "Scrivi a Coach Logic…",
+  Tagalog: "Mag-message kay Coach Logic…",
 };
 
 export default function ComposerBar({
