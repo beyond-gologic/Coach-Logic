@@ -271,12 +271,42 @@ export default function CommandCenterPage() {
 
       {/* Floating chat button */}
       <div className="fixed bottom-6 right-6 z-50">
-        <button className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 hover:from-amber-200 hover:to-amber-300 shadow-lg flex items-center justify-center transition-all hover:scale-105 border border-amber-200">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-amber-700">
-            {/* Simple waving hand/figure */}
-            <circle cx="12" cy="8" r="4" fill="currentColor"/>
-            <path d="M12 14c-4 0-7 2-7 5v1h14v-1c0-3-3-5-7-5z" fill="currentColor"/>
-            <path d="M18 6c1-1 2.5-0.5 3 0.5s0 2-1 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+        <button className="w-[101px] h-[101px] flex items-center justify-center hover:scale-105 transition-transform">
+          <svg width="101" height="101" viewBox="0 0 101 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0.5" y="8.5" width="92" height="92" rx="22.75" fill="url(#paint0_linear_25498_167101)"/>
+            <rect x="0.5" y="8.5" width="92" height="92" rx="22.75" stroke="#9482FF"/>
+            <g filter="url(#filter0_d_25498_167101)">
+              <circle cx="21.2485" cy="46.686" r="9.62354" fill="#C9C2F1"/>
+            </g>
+            <g filter="url(#filter1_d_25498_167101)">
+              <path d="M23.25 64.2861C23.25 83.4874 72.5373 95 72.5373 51.5938M72.5373 51.5938L62.6798 57.4518M72.5373 51.5938L81.375 57.4518" stroke="#ECECEC" strokeWidth="5.70284" strokeLinecap="round" strokeLinejoin="round"/>
+            </g>
+            <defs>
+              <filter id="filter0_d_25498_167101" x="7.625" y="37.0625" width="27.25" height="27.248" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                <feOffset dy="4"/>
+                <feGaussianBlur stdDeviation="2"/>
+                <feComposite in2="hardAlpha" operator="out"/>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_25498_167101"/>
+                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_25498_167101" result="shape"/>
+              </filter>
+              <filter id="filter1_d_25498_167101" x="16.3984" y="48.7422" width="71.8281" height="43.5293" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                <feOffset dy="4"/>
+                <feGaussianBlur stdDeviation="2"/>
+                <feComposite in2="hardAlpha" operator="out"/>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_25498_167101"/>
+                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_25498_167101" result="shape"/>
+              </filter>
+              <linearGradient id="paint0_linear_25498_167101" x1="28" y1="32" x2="93" y2="121" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#705AF8"/>
+                <stop offset="0.948547" stopColor="#423592"/>
+              </linearGradient>
+            </defs>
           </svg>
         </button>
       </div>
