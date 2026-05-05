@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Copy, ThumbsUp, ThumbsDown, Check } from "lucide-react";
+import { Copy, ThumbsUp, ThumbsDown, Check, Volume2, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +27,7 @@ interface MessageBubbleProps {
   tone: string;
   voiceGender: "female" | "male";
   onToneChange: (tone: Personality) => void;
+  onToggleGender: () => void;
 }
 
 export default function MessageBubble({
@@ -34,6 +35,7 @@ export default function MessageBubble({
   tone,
   voiceGender,
   onToneChange,
+  onToggleGender,
 }: MessageBubbleProps) {
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState<"like" | "dislike" | null>(null);
@@ -101,13 +103,19 @@ export default function MessageBubble({
         </div>
 
         {/* Action row */}
-        <div className="flex items-center gap-1 mt-2 ml-1">
+        <div className="flex items-center gap-1.5 mt-2 ml-1">
+          {/* Speaker */}
+          <button className="w-7 h-7 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors" aria-label="Play">
+            <Volume2 className="w-3.5 h-3.5" />
+          </button>
+
           {/* Personality pill / dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-transparent text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground transition-all">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
                 {tone}
+                <ChevronDown className="w-3 h-3 opacity-60" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-44">
@@ -117,15 +125,22 @@ export default function MessageBubble({
                 <DropdownMenuItem
                   key={p}
                   onClick={() => onToneChange(p)}
-                  className={cn(
-                    p === tone && "text-primary font-medium"
-                  )}
+                  className={cn(p === tone && "text-primary font-medium")}
                 >
                   {p}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Gender pill */}
+          <button
+            onClick={onToggleGender}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-border bg-transparent text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground transition-all"
+          >
+            <span>{voiceGender === "female" ? "♀" : "♂"}</span>
+            <ChevronDown className="w-3 h-3 opacity-60" />
+          </button>
 
           {/* Copy */}
           <button
