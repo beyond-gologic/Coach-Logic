@@ -138,13 +138,13 @@ export default function VoiceMode({
   const stateLabel = { listening: "Listening…", thinking: "Thinking…", speaking: "Speaking…" }[state];
 
   return (
-    <div className="flex flex-col h-full bg-[#0f0f11] relative select-none">
+    <div className="flex flex-col h-full bg-background relative select-none">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-2">
-        <span className="text-white/50 text-xs font-medium uppercase tracking-widest">Voice Chat</span>
+        <span className="text-muted-foreground text-xs font-medium uppercase tracking-widest">Voice Chat</span>
         <button
           onClick={handleClose}
-          className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
@@ -181,7 +181,7 @@ export default function VoiceMode({
                 <div
                   key={i}
                   className={cn(
-                    "w-[3px] rounded-full bg-white transition-all",
+                    "w-[3px] rounded-full bg-white/90 transition-all",
                     state === "listening" && "animate-bounce",
                     state === "thinking"  && "opacity-40",
                     state === "speaking"  && "animate-bounce",
@@ -210,16 +210,16 @@ export default function VoiceMode({
         {/* Transcript / response text */}
         <div className="min-h-[60px] text-center px-2">
           {state === "thinking" && transcript && (
-            <p className="text-white/50 text-sm italic">"{transcript}"</p>
+            <p className="text-muted-foreground text-sm italic">"{transcript}"</p>
           )}
           {state === "speaking" && assistantText && (
-            <p className="text-white/80 text-sm leading-relaxed">{assistantText}</p>
+            <p className="text-foreground text-sm leading-relaxed">{assistantText}</p>
           )}
         </div>
       </div>
 
       {/* Footer hint */}
-      <p className="text-white/20 text-xs text-center pb-6">Speak naturally · tap × to exit</p>
+      <p className="text-muted-foreground/40 text-xs text-center pb-6">Speak naturally · tap × to exit</p>
     </div>
   );
 }
