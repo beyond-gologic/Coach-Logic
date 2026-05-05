@@ -287,8 +287,6 @@ export default function ChatShell() {
     <div className="flex flex-col h-screen">
       <TopBar
         messageCount={messageCount}
-        voiceGender={voiceGender}
-        onToggleGender={() => setVoiceGender((g) => (g === "female" ? "male" : "female"))}
         onNewChat={() => setShowNewChatConfirm(true)}
       />
 

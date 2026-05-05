@@ -1,18 +1,15 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/lib/utils";
 
 interface TopBarProps {
   messageCount: number;
-  voiceGender: "female" | "male";
-  onToggleGender: () => void;
   onNewChat: () => void;
 }
 
 const MAX_MESSAGES = 20;
 
-export default function TopBar({ messageCount, voiceGender, onToggleGender, onNewChat }: TopBarProps) {
+export default function TopBar({ messageCount, onNewChat }: TopBarProps) {
   const progress = Math.min(100, (messageCount / MAX_MESSAGES) * 100);
 
   return (
@@ -55,23 +52,7 @@ export default function TopBar({ messageCount, voiceGender, onToggleGender, onNe
         New chat
       </button>
 
-      {/* Voice gender toggle */}
-      <button
-        onClick={onToggleGender}
-        className={cn(
-          "flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-all",
-          "border-border hover:border-primary/50 hover:bg-muted"
-        )}
-        aria-label="Toggle voice gender"
-      >
-        <span className={cn(voiceGender === "female" ? "text-primary" : "text-muted-foreground")}>
-          ♀
-        </span>
-        <span className="text-border">|</span>
-        <span className={cn(voiceGender === "male" ? "text-primary" : "text-muted-foreground")}>
-          ♂
-        </span>
-      </button>
+
     </header>
   );
 }
