@@ -55,11 +55,27 @@ function loadPersistedChat() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"); } catch { return null; }
 }
 
-export default function ChatShell({ hideTopBar = false }: { hideTopBar?: boolean }) {
-  const INITIAL_MESSAGES: Message[] = [{ id: mkId(), role: "assistant", text: INITIAL_ASSISTANT_TEXT, seed: 1 }];
-  const INITIAL_HISTORY: HistoryEntry[] = [{ role: "assistant", content: INITIAL_ASSISTANT_TEXT }];
+interface ChatShellProps {
+  hideTopBar?: boolean;
+  headerTitle?: string;
+  initialTexts?: string[];
+  storageKey?: string;
+}
 
-  const persisted = loadPersistedChat();
+export default function ChatShell({
+  hideTopBar = false,
+  headerTitle = "Let's get to know each other!",
+  initialTexts,
+  storageKey = STORAGE_KEY,
+}: ChatShellProps) {
+  const texts = initialTexts ?? [INITIAL_ASSISTANT_TEXT];
+  const INITIAL_MESSAGES: Message[] = texts.map((text, i) => ({ id: mkId(), role: "assistant" as const, text, seed: i + 1 }));
+  const INITIAL_HISTORY: HistoryEntry[] = texts.map((text) => ({ role: "assistant", content: text }));
+
+  const persisted = (() => {
+    if (typeof window === "undefined") return null;
+    try { return JSON.parse(localStorage.getItem(storageKey) || "null"); } catch { return null; }
+  })();
   const [messages, setMessages] = useState<Message[]>(persisted?.messages ?? INITIAL_MESSAGES);
   const [history, setHistory] = useState<HistoryEntry[]>(persisted?.history ?? INITIAL_HISTORY);
   const [tone, setToneState] = useState<Personality>(persisted?.tone ?? "Professional");
@@ -89,20 +105,20 @@ export default function ChatShell({ hideTopBar = false }: { hideTopBar?: boolean
   // ── Persist chat to localStorage ───────────────────────────
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ messages, history, tone, language }));
+      localStorage.setItem(storageKey, JSON.stringify({ messages, history, tone, language }));
     } catch {}
-  }, [messages, history, tone, language]);
+  }, [messages, history, tone, language, storageKey]);
 
   // ── New chat ────────────────────────────────────────────────
   const startNewChat = useCallback(() => {
-    const fresh: Message[] = [{ id: mkId(), role: "assistant", text: INITIAL_ASSISTANT_TEXT, seed: 1 }];
-    const freshHistory: HistoryEntry[] = [{ role: "assistant", content: INITIAL_ASSISTANT_TEXT }];
+    const fresh: Message[] = texts.map((text, i) => ({ id: mkId(), role: "assistant" as const, text, seed: i + 1 }));
+    const freshHistory: HistoryEntry[] = texts.map((text) => ({ role: "assistant", content: text }));
     setMessages(fresh);
     setHistory(freshHistory);
-    setMessageCount(1);
+    setMessageCount(fresh.length);
     setShowNewChatConfirm(false);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ messages: fresh, history: freshHistory, tone, language })); } catch {}
-  }, [tone, language]);
+    try { localStorage.setItem(storageKey, JSON.stringify({ messages: fresh, history: freshHistory, tone, language })); } catch {}
+  }, [tone, language, storageKey, texts]);
 
   // ── Tone / language setters ─────────────────────────────────
   const setTone = useCallback((value: Personality) => setToneState(value), []);
@@ -326,7 +342,7 @@ export default function ChatShell({ hideTopBar = false }: { hideTopBar?: boolean
             <div className="max-w-3xl mx-auto px-4 py-6">
               <div className="text-center mb-8">
                 <h1 className="font-bricolage font-bold text-2xl text-foreground tracking-tight">
-                  Let&apos;s get to know each other!
+                  {headerTitle}
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1">
                   {new Date().toLocaleDateString("en-US", {

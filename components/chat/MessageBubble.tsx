@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { Copy, ThumbsUp, ThumbsDown, Check, Volume2, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -99,7 +100,9 @@ export default function MessageBubble({
       <div className="flex-1 min-w-0 max-w-[80%]">
         {/* Bubble */}
         <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3">
-          <p className="text-sm text-foreground leading-relaxed">{message.text}</p>
+          <div className="text-sm text-foreground leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-strong:font-semibold prose-em:italic">
+            <ReactMarkdown>{message.text ?? ""}</ReactMarkdown>
+          </div>
 
           {/* Voice player */}
           {!voiceModeActive && <VoicePlayer getSrc={getTtsSrc()} seed={message.seed} variant="assistant" />}

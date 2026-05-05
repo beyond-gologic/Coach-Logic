@@ -38,7 +38,15 @@ export default function GoalCenterShell() {
 
         {/* Chat shell fills remaining space */}
         <div className="flex-1 overflow-hidden">
-          <ChatShell hideTopBar />
+          <ChatShell
+            hideTopBar
+            storageKey="coach-logic-goal-center"
+            headerTitle="Let's Get Started Tackling Your Goals!"
+            initialTexts={[
+              `Please provide just **one goal** and try to make sure that it is S.M.A.R.T. (Specific, Measurable, Achievable, Relevant, and Time-bound).\n\n*Here are a few examples of S.M.A.R.T. goals:*\n- Gain new customers generating an average of $5,000/month in recurring revenue over next 3 months\n- Get approved by the National Supplier Development Council (NSBDC) as a certified Minority Business Enterprise (MBE) within the next 6 months\n\n**You will have a chance to create more goals later, if you want to.**`,
+              "What specific goal did you have in mind?",
+            ]}
+          />
         </div>
       </div>
 
