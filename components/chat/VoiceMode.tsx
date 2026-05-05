@@ -61,12 +61,49 @@ export default function VoiceMode({
     if (!res.ok) return;
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
+
     await new Promise<void>((resolve) => {
       const audio = new Audio(url);
       audioRef.current = audio;
       audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
       audio.onerror = () => { URL.revokeObjectURL(url); resolve(); };
       audio.play().catch(() => resolve());
+
+      // Barge-in: monitor mic — if user speaks, cut audio immediately
+      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+        const ctx = new AudioContext();
+        const src = ctx.createMediaStreamSource(stream);
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 512;
+        src.connect(analyser);
+        const buf = new Uint8Array(analyser.frequencyBinCount);
+        let silenceFrames = 0;
+
+        const check = () => {
+          if (!audioRef.current || audioRef.current.paused || audioRef.current.ended) {
+            stream.getTracks().forEach((t) => t.stop());
+            ctx.close();
+            return;
+          }
+          analyser.getByteFrequencyData(buf);
+          const vol = buf.reduce((a, b) => a + b, 0) / buf.length;
+          if (vol > 18) {
+            silenceFrames = 0;
+            // User is speaking — interrupt
+            audio.pause();
+            URL.revokeObjectURL(url);
+            stream.getTracks().forEach((t) => t.stop());
+            ctx.close();
+            resolve();
+            return;
+          } else {
+            silenceFrames++;
+          }
+          requestAnimationFrame(check);
+        };
+        // Small delay so the audio starts before we listen (avoids self-interrupt)
+        setTimeout(() => requestAnimationFrame(check), 600);
+      }).catch(() => {/* no mic access, just play through */});
     });
   }, [tone, voiceGender]);
 
@@ -96,7 +133,35 @@ export default function VoiceMode({
         } catch { resolve(""); }
       };
       recorder.start(200);
-      setTimeout(() => { if (recorder.state !== "inactive") recorder.stop(); }, 8000);
+
+      // End-of-speech detection via silence
+      const audioCtx = new AudioContext();
+      const micSrc = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      micSrc.connect(analyser);
+      const freqBuf = new Uint8Array(analyser.frequencyBinCount);
+      let silenceMs = 0;
+      let speechDetected = false;
+      const SILENCE_THRESHOLD = 12;
+      const SILENCE_TIMEOUT = 1800; // stop after 1.8s silence post-speech
+      const MAX_DURATION = 15000;
+      const startTime = Date.now();
+
+      const vadLoop = () => {
+        if (recorder.state === "inactive") { audioCtx.close(); return; }
+        analyser.getByteFrequencyData(freqBuf);
+        const vol = freqBuf.reduce((a, b) => a + b, 0) / freqBuf.length;
+        if (vol > SILENCE_THRESHOLD) { speechDetected = true; silenceMs = 0; }
+        else if (speechDetected) { silenceMs += 16; }
+        if ((speechDetected && silenceMs >= SILENCE_TIMEOUT) || Date.now() - startTime > MAX_DURATION) {
+          audioCtx.close();
+          if (recorder.state !== "inactive") recorder.stop();
+          return;
+        }
+        setTimeout(vadLoop, 16);
+      };
+      setTimeout(vadLoop, 300);
     });
   }, [stopMic]);
 
@@ -106,7 +171,7 @@ export default function VoiceMode({
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userText, language, tone, history: [...history].slice(-10) }),
+      body: JSON.stringify({ message: userText, language, tone, history: [...history].slice(-10), voiceMode: true }),
     });
     const data = await res.json();
     return data.reply || "";

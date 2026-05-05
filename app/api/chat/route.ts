@@ -20,13 +20,25 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { message, language = "English", tone = "Professional", history = [] } = body;
+  const { message, language = "English", tone = "Professional", history = [], voiceMode = false } = body;
 
   if (!message || typeof message !== "string" || !message.trim()) {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
   }
 
-  const systemPrompt = `You are Coach Logic, an AI business coach conducting a structured onboarding conversation.
+  const systemPrompt = voiceMode
+    ? `You are Coach Logic, a friendly AI business coach having a live spoken conversation.
+
+Rules for voice:
+- Always reply in ${language}.
+- Your tone is ${tone}: ${toneDescriptions[tone] || "clear and helpful"}.
+- Keep every reply to 1-2 short sentences MAX — this is spoken audio, not text.
+- Sound completely natural, like a real person talking. Use fillers like "got it", "makes sense", "right", "sure" when appropriate.
+- React immediately to what was just said. If the user changes subject or clarifies, pivot with them instantly.
+- Never use bullet points, headers, markdown, or lists — plain spoken sentences only.
+- Ask at most one follow-up question per turn.
+- Do not reintroduce yourself. Do not say you are an AI.`
+    : `You are Coach Logic, an AI business coach conducting a structured onboarding conversation.
 Your goal is to learn about the user's business and goals through natural, flowing conversation — one or two questions at a time — then provide personalized, actionable coaching insights.
 
 Guidelines:
@@ -56,8 +68,8 @@ Guidelines:
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
         messages,
-        max_tokens: 450,
-        temperature: 0.7,
+        max_tokens: voiceMode ? 120 : 450,
+        temperature: voiceMode ? 0.8 : 0.7,
       }),
     });
 
