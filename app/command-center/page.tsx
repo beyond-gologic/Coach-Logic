@@ -226,24 +226,25 @@ export default function CommandCenterPage() {
         </div>
       </div>
 
-      {/* Chat drawer */}
+      {/* Chat panel — floating bottom-right */}
       {chatOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/20"
+        <div
+          className="fixed z-50 flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden border border-border"
+          style={{
+            width: "90vw",
+            height: "90vh",
+            right: "5vw",
+            bottom: "5vh",
+          }}
+        >
+          {/* Close button */}
+          <button
             onClick={() => setChatOpen(false)}
-          />
-          {/* Panel */}
-          <div className="relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col">
-            <button
-              onClick={() => setChatOpen(false)}
-              className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-            <ChatShell hideTopBar storageKey="coach-logic-widget" />
-          </div>
+            className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <ChatShell hideTopBar storageKey="coach-logic-widget" />
         </div>
       )}
 
