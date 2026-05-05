@@ -77,10 +77,10 @@ export default function VoiceMode({
         analyser.fftSize = 512;
         src.connect(analyser);
         const buf = new Uint8Array(analyser.frequencyBinCount);
-        let silenceFrames = 0;
 
         const check = () => {
-          if (!audioRef.current || audioRef.current.paused || audioRef.current.ended) {
+          // Use local `audio` (not audioRef) so stale checks don't affect future speaks
+          if (audio.paused || audio.ended) {
             stream.getTracks().forEach((t) => t.stop());
             ctx.close();
             return;
@@ -88,22 +88,18 @@ export default function VoiceMode({
           analyser.getByteFrequencyData(buf);
           const vol = buf.reduce((a, b) => a + b, 0) / buf.length;
           if (vol > 18) {
-            silenceFrames = 0;
-            // User is speaking — interrupt
             audio.pause();
             URL.revokeObjectURL(url);
             stream.getTracks().forEach((t) => t.stop());
             ctx.close();
             resolve();
             return;
-          } else {
-            silenceFrames++;
           }
           requestAnimationFrame(check);
         };
-        // Small delay so the audio starts before we listen (avoids self-interrupt)
+        // Delay so playback starts before we check (avoids self-interrupt)
         setTimeout(() => requestAnimationFrame(check), 600);
-      }).catch(() => {/* no mic access, just play through */});
+      }).catch(() => {/* no mic access, play through */});
     });
   }, [tone, voiceGender]);
 
