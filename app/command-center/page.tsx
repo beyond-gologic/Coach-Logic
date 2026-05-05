@@ -272,23 +272,27 @@ export default function CommandCenterPage() {
         </div>
       </div>
 
-      {/* Chat slide-over panel */}
+      {/* Chat modal panel */}
       {chatOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end">
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/30"
+            className="absolute inset-0 bg-black/40"
             onClick={() => setChatOpen(false)}
           />
-          {/* Panel */}
-          <div className="relative z-10 flex flex-col w-full max-w-md h-full bg-background shadow-2xl">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
-              <span className="font-semibold text-sm text-foreground">Coach Logic</span>
+          {/* Modal */}
+          <div className="relative z-10 flex flex-col w-[90%] h-[90vh] max-w-4xl bg-background rounded-2xl shadow-2xl overflow-hidden">
+            {/* Purple Header */}
+            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#6366F1] to-[#7C3AED] flex-shrink-0">
+              <div>
+                <h2 className="text-white font-semibold text-lg">Messages</h2>
+                <p className="text-white/80 text-sm">Choose who to chat with</p>
+              </div>
               <button
                 onClick={() => setChatOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-muted transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-white hover:bg-white/20 transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
             <div className="flex-1 overflow-hidden">
