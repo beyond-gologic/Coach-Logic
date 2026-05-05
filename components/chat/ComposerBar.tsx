@@ -13,7 +13,14 @@ import {
   Table,
   Mic,
   SendHorizonal,
+  ChevronDown,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { LANGUAGES, type Language } from "@/lib/voices";
 
@@ -240,24 +247,25 @@ export default function ComposerBar({
 
           {/* Right cluster — language / mic / send */}
           <div className="flex items-center gap-1">
-            <select
-              value={language}
-              onChange={(e) => onLanguageChange(e.target.value)}
-              className={cn(
-                "h-8 pl-2 pr-7 text-xs rounded-lg border border-border bg-transparent",
-                "text-muted-foreground focus:text-foreground",
-                "focus:outline-none focus:ring-1 focus:ring-ring",
-                "cursor-pointer appearance-none",
-                "bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E')]",
-                "bg-no-repeat bg-[right_6px_center]"
-              )}
-            >
-              {LANGUAGES.map((l) => (
-                <option key={l} value={l} className="bg-[#111113] text-foreground">
-                  {l}
-                </option>
-              ))}
-            </select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-transparent text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground transition-all">
+                  {language}
+                  <ChevronDown className="w-3 h-3 opacity-60" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-32">
+                {LANGUAGES.map((l) => (
+                  <DropdownMenuItem
+                    key={l}
+                    onClick={() => onLanguageChange(l)}
+                    className={cn(l === language && "text-primary font-medium")}
+                  >
+                    {l}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Mic */}
             <button

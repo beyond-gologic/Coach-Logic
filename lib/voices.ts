@@ -49,19 +49,7 @@ export function getVoiceId(personality: Personality, gender: "female" | "male"):
 export const LANGUAGES = [
   "English",
   "Spanish",
-  "French",
-  "German",
-  "Italian",
-  "Portuguese",
-  "Dutch",
-  "Russian",
-  "Japanese",
-  "Chinese",
-  "Korean",
   "Arabic",
-  "Hindi",
-  "Turkish",
-  "Polish",
 ] as const;
 
 export type Language = (typeof LANGUAGES)[number];
