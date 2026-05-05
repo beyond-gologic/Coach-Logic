@@ -8,7 +8,6 @@ import {
   MessageSquare,
   Bell,
   User,
-  ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,17 +39,8 @@ export default function GlobalNav() {
           </span>
         </Link>
 
-        {/* Back to Coach Logic */}
-        <Link
-          href="/"
-          className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border border-border hover:border-primary/50 px-3 py-1.5 rounded-full transition-colors mr-2"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Coach Logic
-        </Link>
-
         {/* Right icons */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 ml-auto">
           <button className="w-9 h-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors">
             <HelpCircle className="w-5 h-5" />
           </button>
@@ -59,12 +49,14 @@ export default function GlobalNav() {
           </button>
           <button className="relative w-9 h-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors">
             <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center leading-none">
-              3
+            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+              8
             </span>
           </button>
-          <button className="w-9 h-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors">
-            <User className="w-5 h-5" />
+          <button className="w-9 h-9 flex items-center justify-center rounded-full overflow-hidden bg-amber-100 hover:ring-2 hover:ring-primary/20 transition-all">
+            <div className="w-full h-full bg-gradient-to-br from-amber-200 to-amber-300 flex items-center justify-center">
+              <User className="w-5 h-5 text-amber-700" />
+            </div>
           </button>
         </div>
       </div>

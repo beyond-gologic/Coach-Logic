@@ -6,11 +6,78 @@ import {
   Plus,
   Pencil,
   Info,
-  ClipboardList,
-  CalendarOff,
-  Smile,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// Empty state illustration for Plays
+function PlaysEmptyIllustration() {
+  return (
+    <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-muted-foreground/30">
+      {/* Clipboard body */}
+      <rect x="24" y="20" width="48" height="60" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+      {/* Clipboard clip */}
+      <path d="M36 20V16a4 4 0 014-4h16a4 4 0 014 4v4" stroke="currentColor" strokeWidth="2" fill="none"/>
+      {/* Lines on clipboard */}
+      <line x1="32" y1="36" x2="56" y2="36" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="32" y1="46" x2="64" y2="46" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="32" y1="56" x2="52" y2="56" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      {/* Magnifying glass */}
+      <circle cx="62" cy="64" r="10" stroke="currentColor" strokeWidth="2" fill="white"/>
+      <line x1="69" y1="71" x2="76" y2="78" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      {/* Question mark in magnifying glass */}
+      <path d="M59 61c0-2 1.5-3 3-3s3 1 3 3c0 1.5-1.5 2-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+      <circle cx="62" cy="69" r="1" fill="currentColor"/>
+    </svg>
+  );
+}
+
+// Empty state illustration for Calendar
+function CalendarEmptyIllustration() {
+  return (
+    <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-muted-foreground/30">
+      {/* Calendar body */}
+      <rect x="20" y="24" width="56" height="52" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+      {/* Calendar top bar */}
+      <path d="M20 36h56" stroke="currentColor" strokeWidth="2"/>
+      {/* Calendar hooks */}
+      <line x1="32" y1="16" x2="32" y2="28" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="64" y1="16" x2="64" y2="28" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      {/* Calendar grid dots */}
+      <circle cx="32" cy="48" r="3" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+      <circle cx="48" cy="48" r="3" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+      <circle cx="64" cy="48" r="3" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+      <circle cx="32" cy="62" r="3" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+      <circle cx="48" cy="62" r="3" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+      <circle cx="64" cy="62" r="3" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+      {/* Clock overlay */}
+      <circle cx="68" cy="68" r="12" stroke="currentColor" strokeWidth="2" fill="white"/>
+      <line x1="68" y1="62" x2="68" y2="68" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="68" y1="68" x2="74" y2="68" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// Coach Logic robot avatar
+function CoachLogicAvatar() {
+  return (
+    <div className="relative flex-shrink-0">
+      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-100 to-violet-200 border border-violet-200 flex items-center justify-center overflow-hidden">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-violet-600">
+          {/* Robot head */}
+          <rect x="5" y="8" width="14" height="12" rx="3" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+          {/* Antenna */}
+          <line x1="12" y1="4" x2="12" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <circle cx="12" cy="3" r="1.5" fill="currentColor"/>
+          {/* Eyes */}
+          <circle cx="9" cy="13" r="1.5" fill="currentColor"/>
+          <circle cx="15" cy="13" r="1.5" fill="currentColor"/>
+          {/* Mouth */}
+          <path d="M9 17h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      </div>
+    </div>
+  );
+}
 
 export default function CommandCenterPage() {
   const [playsTab, setPlaysTab] = useState<"todo" | "inprogress" | "blocked">("todo");
@@ -18,20 +85,15 @@ export default function CommandCenterPage() {
   const [shareStats, setShareStats] = useState(false);
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-6 space-y-6 pb-24">
+    <div className="max-w-5xl mx-auto px-6 py-6 space-y-6 pb-24">
 
       {/* Coach Logic banner */}
-      <div className="border border-border rounded-xl p-4 flex items-start gap-4 bg-white">
-        <div className="relative flex-shrink-0">
-          <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-            <span className="text-primary font-bricolage font-bold text-sm">CL</span>
-          </div>
-          <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white" />
-        </div>
+      <div className="border border-border rounded-xl p-4 flex items-start gap-4 bg-white shadow-sm">
+        <CoachLogicAvatar />
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm text-foreground leading-tight">Coach Logic</p>
-          <p className="text-xs text-muted-foreground mb-2">Your Business AI Coach</p>
-          <p className="text-sm text-foreground leading-relaxed">
+          <p className="text-xs text-muted-foreground mb-1">Your Business AI Coach</p>
+          <p className="text-sm text-foreground/80 leading-relaxed">
             Hey, Your Command Center is empty because we haven&apos;t finished your setup. Let&apos;s knock out those last onboarding steps so I can start tracking your wins.
           </p>
         </div>
@@ -43,7 +105,7 @@ export default function CommandCenterPage() {
       {/* Welcome header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="font-bricolage font-bold text-2xl text-foreground">Welcome back, Tyler!</h1>
+          <h1 className="font-bricolage font-bold text-xl text-foreground">Welcome back, Tyler!</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Here is what has happened recently</p>
         </div>
         <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted transition-colors">
@@ -52,18 +114,33 @@ export default function CommandCenterPage() {
       </div>
 
       {/* Touchdowns banner */}
-      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#5b3cf5] via-[#6d4ef7] to-[#7c5cfa] p-8 text-white">
-        <div className="max-w-[55%]">
+      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#6366f1] via-[#7c7cf7] to-[#a5a5fc] p-8 text-white min-h-[160px]">
+        {/* Decorative wave pattern */}
+        <div className="absolute inset-0 opacity-30">
+          <svg className="absolute right-0 top-0 h-full w-2/3" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none">
+            <path d="M200 0C100 50 150 150 0 200H400V0H200Z" fill="url(#wave-gradient)" fillOpacity="0.4"/>
+            <defs>
+              <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#c4b5fd"/>
+                <stop offset="100%" stopColor="#8b5cf6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        
+        <div className="relative z-10 max-w-[55%]">
           <h2 className="font-bricolage font-bold text-3xl leading-tight">Touchdowns<br />Completed</h2>
           <p className="text-white/80 mt-2 text-base">Let&apos;s build your first Touchdown</p>
         </div>
-        {/* Large zero */}
-        <div className="absolute right-12 top-1/2 -translate-y-1/2">
+        
+        {/* Large zero with 3D effect */}
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 z-10">
           <div className="relative">
-            {/* Card shadow shape */}
-            <div className="w-28 h-28 rounded-3xl bg-white/10 absolute -bottom-3 -right-3 rotate-6" />
-            <div className="w-28 h-28 rounded-3xl bg-[#4a2ee0] flex items-center justify-center relative">
-              <span className="font-bricolage font-bold text-6xl text-white leading-none">0</span>
+            {/* Shadow/depth layer */}
+            <div className="absolute -bottom-2 -right-2 w-24 h-28 rounded-2xl bg-indigo-800/40 rotate-3" />
+            {/* Main card */}
+            <div className="w-24 h-28 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-lg relative">
+              <span className="font-bricolage font-bold text-6xl text-white/90 leading-none drop-shadow-md">0</span>
             </div>
           </div>
         </div>
@@ -73,13 +150,13 @@ export default function CommandCenterPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
         {/* Plays card */}
-        <div className="border border-border rounded-xl bg-white p-5 space-y-4">
+        <div className="border border-border rounded-xl bg-white p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm text-foreground">Plays</span>
+            <div className="flex items-baseline gap-2">
+              <span className="font-semibold text-base text-foreground">Plays</span>
               <span className="text-sm text-muted-foreground">Today</span>
             </div>
-            <button className="flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+            <button className="flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors">
               Add a Play <Plus className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -94,7 +171,7 @@ export default function CommandCenterPage() {
                   key={tab}
                   onClick={() => setPlaysTab(tab)}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors border",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
                     active
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-transparent text-muted-foreground border-border hover:border-primary/40"
@@ -107,20 +184,20 @@ export default function CommandCenterPage() {
           </div>
 
           {/* Empty state */}
-          <div className="flex flex-col items-center justify-center py-10 gap-3 text-muted-foreground/50">
-            <ClipboardList className="w-14 h-14 stroke-[1]" />
+          <div className="flex flex-col items-center justify-center py-8 gap-2">
+            <PlaysEmptyIllustration />
             <p className="text-sm text-muted-foreground">No Plays yet</p>
           </div>
         </div>
 
         {/* Upcoming Appointments card */}
-        <div className="border border-border rounded-xl bg-white p-5 space-y-4">
+        <div className="border border-border rounded-xl bg-white p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm text-foreground">Upcoming Appointments</span>
+            <div className="flex items-baseline gap-2">
+              <span className="font-semibold text-base text-foreground">Upcoming Appointments</span>
               <span className="text-sm text-muted-foreground">Today</span>
             </div>
-            <button className="flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+            <button className="flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors">
               Create Event <Plus className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -130,21 +207,21 @@ export default function CommandCenterPage() {
             <button
               onClick={() => setMeetingsOnly(!meetingsOnly)}
               className={cn(
-                "relative w-9 h-5 rounded-full transition-colors flex-shrink-0",
+                "relative w-10 h-5 rounded-full transition-colors flex-shrink-0",
                 meetingsOnly ? "bg-primary" : "bg-muted"
               )}
             >
               <span className={cn(
                 "absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform",
-                meetingsOnly ? "translate-x-4" : "translate-x-0.5"
+                meetingsOnly ? "translate-x-5" : "translate-x-0.5"
               )} />
             </button>
-            <span className="text-xs text-muted-foreground">GoTackle Meetings Only</span>
+            <span className="text-sm text-muted-foreground">GoTackle Meetings Only</span>
           </div>
 
           {/* Empty state */}
-          <div className="flex flex-col items-center justify-center py-10 gap-3">
-            <CalendarOff className="w-14 h-14 stroke-[1] text-muted-foreground/40" />
+          <div className="flex flex-col items-center justify-center py-8 gap-2">
+            <CalendarEmptyIllustration />
             <p className="text-sm text-muted-foreground">No Upcoming Appointments</p>
           </div>
         </div>
@@ -154,27 +231,27 @@ export default function CommandCenterPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-bricolage font-bold text-lg text-foreground">Your Stats</h2>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Share with consultant</span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Share with consultant</span>
               <button className="text-muted-foreground/60 hover:text-muted-foreground">
-                <Info className="w-3.5 h-3.5" />
+                <Info className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setShareStats(!shareStats)}
                 className={cn(
-                  "relative w-9 h-5 rounded-full transition-colors flex-shrink-0",
+                  "relative w-10 h-5 rounded-full transition-colors flex-shrink-0",
                   shareStats ? "bg-primary" : "bg-muted"
                 )}
               >
                 <span className={cn(
                   "absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform",
-                  shareStats ? "translate-x-4" : "translate-x-0.5"
+                  shareStats ? "translate-x-5" : "translate-x-0.5"
                 )} />
               </button>
             </div>
-            <button className="flex items-center gap-1.5 border border-border hover:border-primary/50 text-xs font-medium px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
-              <Pencil className="w-3.5 h-3.5" /> Edit Stats
+            <button className="flex items-center gap-1.5 border border-border hover:border-primary/50 text-sm font-medium px-3.5 py-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors bg-white">
+              <Pencil className="w-4 h-4" /> Edit Stats
             </button>
           </div>
         </div>
@@ -184,7 +261,7 @@ export default function CommandCenterPage() {
           {[0, 1, 2, 3].map((i) => (
             <button
               key={i}
-              className="border border-dashed border-border rounded-xl h-32 flex items-center justify-center text-sm text-muted-foreground/50 hover:border-primary/40 hover:text-muted-foreground transition-colors bg-white"
+              className="border border-dashed border-border rounded-xl h-28 flex items-center justify-center text-base text-muted-foreground/50 hover:border-primary/40 hover:text-muted-foreground transition-colors bg-white"
             >
               Add Stat
             </button>
@@ -194,8 +271,13 @@ export default function CommandCenterPage() {
 
       {/* Floating chat button */}
       <div className="fixed bottom-6 right-6 z-50">
-        <button className="w-14 h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30 flex items-center justify-center transition-all hover:scale-105">
-          <Smile className="w-7 h-7" />
+        <button className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 hover:from-amber-200 hover:to-amber-300 shadow-lg flex items-center justify-center transition-all hover:scale-105 border border-amber-200">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-amber-700">
+            {/* Simple waving hand/figure */}
+            <circle cx="12" cy="8" r="4" fill="currentColor"/>
+            <path d="M12 14c-4 0-7 2-7 5v1h14v-1c0-3-3-5-7-5z" fill="currentColor"/>
+            <path d="M18 6c1-1 2.5-0.5 3 0.5s0 2-1 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+          </svg>
         </button>
       </div>
     </div>
