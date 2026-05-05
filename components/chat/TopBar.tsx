@@ -7,11 +7,12 @@ interface TopBarProps {
   messageCount: number;
   voiceGender: "female" | "male";
   onToggleGender: () => void;
+  onNewChat: () => void;
 }
 
 const MAX_MESSAGES = 20;
 
-export default function TopBar({ messageCount, voiceGender, onToggleGender }: TopBarProps) {
+export default function TopBar({ messageCount, voiceGender, onToggleGender, onNewChat }: TopBarProps) {
   const progress = Math.min(100, (messageCount / MAX_MESSAGES) * 100);
 
   return (
@@ -45,6 +46,14 @@ export default function TopBar({ messageCount, voiceGender, onToggleGender }: To
           />
         </div>
       </div>
+
+      {/* New chat */}
+      <button
+        onClick={onNewChat}
+        className="text-xs text-muted-foreground hover:text-foreground border border-border hover:border-primary/50 px-3 py-1.5 rounded-full transition-colors"
+      >
+        New chat
+      </button>
 
       {/* Voice gender toggle */}
       <button

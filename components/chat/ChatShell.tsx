@@ -48,23 +48,31 @@ const LANG_CODE_MAP: Record<string, string> = {
 let msgCounter = 0;
 const mkId = () => `msg-${Date.now()}-${++msgCounter}`;
 
+const STORAGE_KEY = "coach-logic-chat";
+
+function loadPersistedChat() {
+  if (typeof window === "undefined") return null;
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"); } catch { return null; }
+}
+
 export default function ChatShell() {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: mkId(), role: "assistant", text: INITIAL_ASSISTANT_TEXT, seed: 1 },
-  ]);
-  const [history, setHistory] = useState<HistoryEntry[]>([
-    { role: "assistant", content: INITIAL_ASSISTANT_TEXT },
-  ]);
-  const [tone, setToneState] = useState<Personality>("Professional");
-  const [language, setLanguageState] = useState<string>("English");
+  const INITIAL_MESSAGES: Message[] = [{ id: mkId(), role: "assistant", text: INITIAL_ASSISTANT_TEXT, seed: 1 }];
+  const INITIAL_HISTORY: HistoryEntry[] = [{ role: "assistant", content: INITIAL_ASSISTANT_TEXT }];
+
+  const persisted = loadPersistedChat();
+  const [messages, setMessages] = useState<Message[]>(persisted?.messages ?? INITIAL_MESSAGES);
+  const [history, setHistory] = useState<HistoryEntry[]>(persisted?.history ?? INITIAL_HISTORY);
+  const [tone, setToneState] = useState<Personality>(persisted?.tone ?? "Professional");
+  const [language, setLanguageState] = useState<string>(persisted?.language ?? "English");
   const [voiceGender, setVoiceGender] = useState<"female" | "male">("female");
-  const [messageCount, setMessageCount] = useState(1);
+  const [messageCount, setMessageCount] = useState(persisted?.messages?.length ?? 1);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [audioPreview, setAudioPreview] = useState<AudioPreviewState | null>(null);
   const [isSendingAudio, setIsSendingAudio] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [showNewChatConfirm, setShowNewChatConfirm] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
@@ -77,6 +85,24 @@ export default function ChatShell() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping, scrollToBottom]);
+
+  // ── Persist chat to localStorage ───────────────────────────
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ messages, history, tone, language }));
+    } catch {}
+  }, [messages, history, tone, language]);
+
+  // ── New chat ────────────────────────────────────────────────
+  const startNewChat = useCallback(() => {
+    const fresh: Message[] = [{ id: mkId(), role: "assistant", text: INITIAL_ASSISTANT_TEXT, seed: 1 }];
+    const freshHistory: HistoryEntry[] = [{ role: "assistant", content: INITIAL_ASSISTANT_TEXT }];
+    setMessages(fresh);
+    setHistory(freshHistory);
+    setMessageCount(1);
+    setShowNewChatConfirm(false);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ messages: fresh, history: freshHistory, tone, language })); } catch {}
+  }, [tone, language]);
 
   // ── Tone / language setters ─────────────────────────────────
   const setTone = useCallback((value: Personality) => setToneState(value), []);
@@ -263,7 +289,32 @@ export default function ChatShell() {
         messageCount={messageCount}
         voiceGender={voiceGender}
         onToggleGender={() => setVoiceGender((g) => (g === "female" ? "male" : "female"))}
+        onNewChat={() => setShowNewChatConfirm(true)}
       />
+
+      {/* New chat confirmation */}
+      {showNewChatConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4 space-y-4">
+            <h2 className="font-bricolage font-bold text-lg text-foreground">Start a new chat?</h2>
+            <p className="text-sm text-muted-foreground">Your current conversation will be saved and a fresh session will begin.</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowNewChatConfirm(false)}
+                className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted transition-colors"
+              >
+                Keep chatting
+              </button>
+              <button
+                onClick={startNewChat}
+                className="px-4 py-2 rounded-lg text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Start new chat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main content: split when voice mode open */}
       <div className={cn("flex-1 overflow-hidden flex", isVoiceMode ? "flex-row" : "flex-col")}>
