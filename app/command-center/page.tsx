@@ -6,8 +6,10 @@ import {
   Plus,
   Pencil,
   Info,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ChatShell from "@/components/chat/ChatShell";
 
 // Empty state illustration for Plays
 function PlaysEmptyIllustration() {
@@ -83,6 +85,7 @@ export default function CommandCenterPage() {
   const [playsTab, setPlaysTab] = useState<"todo" | "inprogress" | "blocked">("todo");
   const [meetingsOnly, setMeetingsOnly] = useState(false);
   const [shareStats, setShareStats] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-6 space-y-6 pb-24">
@@ -269,9 +272,37 @@ export default function CommandCenterPage() {
         </div>
       </div>
 
+      {/* Chat slide-over panel */}
+      {chatOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/30"
+            onClick={() => setChatOpen(false)}
+          />
+          {/* Panel */}
+          <div className="relative z-10 flex flex-col w-full max-w-md h-full bg-background shadow-2xl">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+              <span className="font-semibold text-sm text-foreground">Coach Logic</span>
+              <button
+                onClick={() => setChatOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-muted transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <ChatShell hideTopBar />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Floating chat button */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <button className="w-[101px] h-[101px] flex items-center justify-center hover:scale-105 transition-transform">
+      <div className="fixed bottom-6 right-6 z-40">
+        <button
+          onClick={() => setChatOpen(true)}
+          className="w-[101px] h-[101px] flex items-center justify-center hover:scale-105 transition-transform">
           <svg width="101" height="101" viewBox="0 0 101 101" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="0.5" y="8.5" width="92" height="92" rx="22.75" fill="url(#paint0_linear_25498_167101)"/>
             <rect x="0.5" y="8.5" width="92" height="92" rx="22.75" stroke="#9482FF"/>
