@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { X, Mic } from "lucide-react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getVoiceId, type Personality } from "@/lib/voices";
 
-type VoiceState = "idle" | "listening" | "thinking" | "speaking";
+type VoiceState = "listening" | "thinking" | "speaking";
 
 interface VoiceModeProps {
   onClose: () => void;
@@ -24,7 +24,7 @@ export default function VoiceMode({
   history,
   onMessageExchange,
 }: VoiceModeProps) {
-  const [state, setState] = useState<VoiceState>("idle");
+  const [state, setState] = useState<VoiceState>("listening");
   const [transcript, setTranscript] = useState("");
   const [assistantText, setAssistantText] = useState("");
 
@@ -49,29 +49,26 @@ export default function VoiceMode({
     onClose();
   }, [stopMic, onClose]);
 
-  const speak = useCallback(
-    async (text: string): Promise<void> => {
-      setState("speaking");
-      setAssistantText(text);
-      const voiceId = getVoiceId(tone, voiceGender);
-      const res = await fetch("/api/speak", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, voice_id: voiceId }),
-      });
-      if (!res.ok) return;
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      await new Promise<void>((resolve) => {
-        const audio = new Audio(url);
-        audioRef.current = audio;
-        audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
-        audio.onerror = () => { URL.revokeObjectURL(url); resolve(); };
-        audio.play().catch(() => resolve());
-      });
-    },
-    [tone, voiceGender]
-  );
+  const speak = useCallback(async (text: string): Promise<void> => {
+    setState("speaking");
+    setAssistantText(text);
+    const voiceId = getVoiceId(tone, voiceGender);
+    const res = await fetch("/api/speak", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, voice_id: voiceId }),
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    await new Promise<void>((resolve) => {
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
+      audio.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+      audio.play().catch(() => resolve());
+    });
+  }, [tone, voiceGender]);
 
   const listen = useCallback(async (): Promise<string> => {
     setState("listening");
@@ -96,61 +93,40 @@ export default function VoiceMode({
           const res = await fetch("/api/transcribe", { method: "POST", body: fd });
           const data = await res.json();
           resolve(data.transcript || "");
-        } catch {
-          resolve("");
-        }
+        } catch { resolve(""); }
       };
       recorder.start(200);
-      // Auto-stop after 8 seconds of silence detection via timer
-      setTimeout(() => {
-        if (recorder.state !== "inactive") recorder.stop();
-      }, 8000);
+      setTimeout(() => { if (recorder.state !== "inactive") recorder.stop(); }, 8000);
     });
   }, [stopMic]);
 
-  const chat = useCallback(
-    async (userText: string): Promise<string> => {
-      setState("thinking");
-      setTranscript(userText);
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: userText,
-          language,
-          tone,
-          history: [...history].slice(-10),
-        }),
-      });
-      const data = await res.json();
-      return data.reply || "";
-    },
-    [language, tone, history]
-  );
+  const chat = useCallback(async (userText: string): Promise<string> => {
+    setState("thinking");
+    setTranscript(userText);
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userText, language, tone, history: [...history].slice(-10) }),
+    });
+    const data = await res.json();
+    return data.reply || "";
+  }, [language, tone, history]);
 
-  // Main conversation loop
   useEffect(() => {
     activeRef.current = true;
-
     const loop = async () => {
       while (activeRef.current) {
         const userText = await listen();
         if (!activeRef.current) break;
         if (!userText.trim()) continue;
-
         const reply = await chat(userText);
         if (!activeRef.current) break;
-
         await speak(reply);
         if (!activeRef.current) break;
-
         onMessageExchange(userText, reply);
-        setState("listening");
       }
     };
-
     loop();
-
     return () => {
       activeRef.current = false;
       stopMic();
@@ -159,57 +135,91 @@ export default function VoiceMode({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const stateLabel = {
-    idle: "Starting…",
-    listening: "Listening…",
-    thinking: "Thinking…",
-    speaking: "Speaking…",
-  }[state];
+  const stateLabel = { listening: "Listening…", thinking: "Thinking…", speaking: "Speaking…" }[state];
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
-      {/* Close */}
-      <button
-        onClick={handleClose}
-        className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
-      >
-        <X className="w-5 h-5" />
-      </button>
-
-      {/* Orb */}
-      <div className="relative flex items-center justify-center mb-8">
-        <div
-          className={cn(
-            "w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300",
-            state === "listening" && "bg-primary/20 ring-4 ring-primary/40 animate-pulse",
-            state === "thinking" && "bg-yellow-500/20 ring-4 ring-yellow-500/40 animate-pulse",
-            state === "speaking" && "bg-green-500/20 ring-4 ring-green-500/40 animate-pulse",
-            state === "idle" && "bg-white/10"
-          )}
+    <div className="flex flex-col h-full bg-[#0f0f11] relative select-none">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 pt-5 pb-2">
+        <span className="text-white/50 text-xs font-medium uppercase tracking-widest">Voice Chat</span>
+        <button
+          onClick={handleClose}
+          className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors"
         >
-          <Mic
-            className={cn(
-              "w-10 h-10 transition-colors",
-              state === "listening" ? "text-primary" : "text-white/60"
-            )}
-          />
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Bubble area */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-6 px-6">
+        {/* Animated orb */}
+        <div className="relative flex items-center justify-center">
+          {/* Outer glow rings */}
+          <div className={cn(
+            "absolute rounded-full transition-all duration-700",
+            state === "listening" && "w-52 h-52 bg-primary/10 animate-ping",
+            state === "thinking"  && "w-52 h-52 bg-yellow-500/10 animate-ping",
+            state === "speaking"  && "w-52 h-52 bg-violet-500/10 animate-ping",
+          )} />
+          <div className={cn(
+            "absolute rounded-full transition-all duration-500",
+            state === "listening" && "w-44 h-44 bg-primary/15",
+            state === "thinking"  && "w-44 h-44 bg-yellow-500/15",
+            state === "speaking"  && "w-44 h-44 bg-violet-500/15",
+          )} />
+
+          {/* Core bubble */}
+          <div className={cn(
+            "w-32 h-32 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl",
+            state === "listening" && "bg-gradient-to-br from-primary/80 to-primary shadow-primary/40",
+            state === "thinking"  && "bg-gradient-to-br from-yellow-400/80 to-yellow-600 shadow-yellow-500/40",
+            state === "speaking"  && "bg-gradient-to-br from-violet-400/80 to-violet-600 shadow-violet-500/40",
+          )}>
+            {/* Sound wave bars */}
+            <div className="flex items-center gap-[3px]">
+              {[0,1,2,3,4].map((i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "w-[3px] rounded-full bg-white transition-all",
+                    state === "listening" && "animate-bounce",
+                    state === "thinking"  && "opacity-40",
+                    state === "speaking"  && "animate-bounce",
+                  )}
+                  style={{
+                    height: state === "thinking" ? "8px" : `${10 + (i % 3) * 8}px`,
+                    animationDelay: `${i * 0.1}s`,
+                    animationDuration: state === "speaking" ? "0.5s" : "0.8s",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* State label */}
+        <p className={cn(
+          "text-sm font-medium transition-colors",
+          state === "listening" && "text-primary",
+          state === "thinking"  && "text-yellow-400",
+          state === "speaking"  && "text-violet-400",
+        )}>
+          {stateLabel}
+        </p>
+
+        {/* Transcript / response text */}
+        <div className="min-h-[60px] text-center px-2">
+          {state === "thinking" && transcript && (
+            <p className="text-white/50 text-sm italic">"{transcript}"</p>
+          )}
+          {state === "speaking" && assistantText && (
+            <p className="text-white/80 text-sm leading-relaxed">{assistantText}</p>
+          )}
         </div>
       </div>
 
-      {/* State label */}
-      <p className="text-white/80 text-sm font-medium mb-3">{stateLabel}</p>
-
-      {/* Transcript / response */}
-      {transcript && (
-        <p className="text-white/60 text-sm max-w-xs text-center px-4 mb-2">
-          {state === "thinking" || state === "speaking" ? `"${transcript}"` : ""}
-        </p>
-      )}
-      {state === "speaking" && assistantText && (
-        <p className="text-white text-sm max-w-xs text-center px-4">{assistantText}</p>
-      )}
-
-      <p className="text-white/30 text-xs mt-6">Tap × to exit voice mode</p>
+      {/* Footer hint */}
+      <p className="text-white/20 text-xs text-center pb-6">Speak naturally · tap × to exit</p>
     </div>
   );
 }

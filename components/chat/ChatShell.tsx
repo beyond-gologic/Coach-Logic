@@ -8,6 +8,7 @@ import ComposerBar from "./ComposerBar";
 import VoiceMode from "./VoiceMode";
 import { detectLanguage } from "@/lib/language";
 import { getVoiceId, type Personality, type Language } from "@/lib/voices";
+import { cn } from "@/lib/utils";
 
 export interface Message {
   id: string;
@@ -264,82 +265,119 @@ export default function ChatShell() {
         onToggleGender={() => setVoiceGender((g) => (g === "female" ? "male" : "female"))}
       />
 
-      {/* Thread — scrollable middle */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-4 py-6">
-          <div className="text-center mb-8">
-            <h1 className="font-bricolage font-bold text-2xl text-foreground tracking-tight">
-              Let&apos;s get to know each other!
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {new Date().toLocaleDateString("en-US", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
+      {/* Main content: split when voice mode open */}
+      <div className={cn("flex-1 overflow-hidden flex", isVoiceMode ? "flex-row" : "flex-col")}>
+
+        {/* Chat column */}
+        <div className={cn("flex flex-col overflow-hidden", isVoiceMode ? "flex-[0_0_60%]" : "flex-1")}>
+          {/* Thread — scrollable middle */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-3xl mx-auto px-4 py-6">
+              <div className="text-center mb-8">
+                <h1 className="font-bricolage font-bold text-2xl text-foreground tracking-tight">
+                  Let&apos;s get to know each other!
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {new Date().toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+
+              <MessageThread
+                messages={messages}
+                tone={tone}
+                voiceGender={voiceGender}
+                status={isTyping ? "Thinking…" : undefined}
+                onToneChange={setTone}
+                onToggleGender={() => setVoiceGender((g) => (g === "female" ? "male" : "female"))}
+              />
+              <div ref={threadEndRef} />
+            </div>
           </div>
 
-          <MessageThread
-            messages={messages}
-            tone={tone}
-            voiceGender={voiceGender}
-            status={isTyping ? "Thinking…" : undefined}
-            onToneChange={setTone}
-            onToggleGender={() => setVoiceGender((g) => (g === "female" ? "male" : "female"))}
+          {/* Audio preview strip */}
+          {audioPreview && (
+            <div className="flex-shrink-0 max-w-3xl mx-auto w-full px-4 pb-2">
+              <AudioPreview
+                objectUrl={audioPreview.objectUrl}
+                seed={7}
+                onDiscard={handleDiscardAudio}
+                onSend={handleSendAudio}
+                isSending={isSendingAudio}
+              />
+            </div>
+          )}
+
+          <ComposerBar
+            value={inputValue}
+            onChange={setInputValue}
+            onSend={handleSend}
+            onMicClick={handleMicClick}
+            isListening={isListening}
+            language={language}
+            onLanguageChange={setLanguage}
+            onAttach={handleAttach}
+            onVoiceModeClick={() => setIsVoiceMode(true)}
+            disabled={isTyping || isSendingAudio}
           />
-          <div ref={threadEndRef} />
         </div>
+
+        {/* Voice mode side panel — desktop */}
+        {isVoiceMode && (
+          <div className="hidden md:flex md:flex-col flex-[0_0_40%] border-l border-border">
+            <VoiceMode
+              onClose={() => setIsVoiceMode(false)}
+              tone={tone}
+              voiceGender={voiceGender}
+              language={language}
+              history={history}
+              onMessageExchange={(userText, assistantText) => {
+                const voiceId = getVoiceId(tone, voiceGender);
+                setMessages((prev) => [
+                  ...prev,
+                  { id: mkId(), role: "user", text: userText, seed: Date.now() & 0xffffffff },
+                  { id: mkId(), role: "assistant", text: assistantText, seed: Date.now() & 0xffffffff, voiceId } as Message,
+                ]);
+                setHistory((prev) => [
+                  ...prev,
+                  { role: "user", content: userText },
+                  { role: "assistant", content: assistantText },
+                ]);
+              }}
+            />
+          </div>
+        )}
+
+        {/* Voice mode bottom sheet — mobile */}
+        {isVoiceMode && (
+          <div className="fixed bottom-0 left-0 right-0 h-[55vh] z-50 flex flex-col md:hidden border-t border-border">
+            <VoiceMode
+              onClose={() => setIsVoiceMode(false)}
+              tone={tone}
+              voiceGender={voiceGender}
+              language={language}
+              history={history}
+              onMessageExchange={(userText, assistantText) => {
+                const voiceId = getVoiceId(tone, voiceGender);
+                setMessages((prev) => [
+                  ...prev,
+                  { id: mkId(), role: "user", text: userText, seed: Date.now() & 0xffffffff },
+                  { id: mkId(), role: "assistant", text: assistantText, seed: Date.now() & 0xffffffff, voiceId } as Message,
+                ]);
+                setHistory((prev) => [
+                  ...prev,
+                  { role: "user", content: userText },
+                  { role: "assistant", content: assistantText },
+                ]);
+              }}
+            />
+          </div>
+        )}
+
       </div>
-
-      {/* Audio preview strip */}
-      {audioPreview && (
-        <div className="flex-shrink-0 max-w-3xl mx-auto w-full px-4 pb-2">
-          <AudioPreview
-            objectUrl={audioPreview.objectUrl}
-            seed={7}
-            onDiscard={handleDiscardAudio}
-            onSend={handleSendAudio}
-            isSending={isSendingAudio}
-          />
-        </div>
-      )}
-
-      <ComposerBar
-        value={inputValue}
-        onChange={setInputValue}
-        onSend={handleSend}
-        onMicClick={handleMicClick}
-        isListening={isListening}
-        language={language}
-        onLanguageChange={setLanguage}
-        onAttach={handleAttach}
-        onVoiceModeClick={() => setIsVoiceMode(true)}
-        disabled={isTyping || isSendingAudio}
-      />
-
-      {isVoiceMode && (
-        <VoiceMode
-          onClose={() => setIsVoiceMode(false)}
-          tone={tone}
-          voiceGender={voiceGender}
-          language={language}
-          history={history}
-          onMessageExchange={(userText, assistantText) => {
-            const voiceId = getVoiceId(tone, voiceGender);
-            setMessages((prev) => [
-              ...prev,
-              { id: mkId(), role: "user", text: userText, seed: Date.now() & 0xffffffff },
-              { id: mkId(), role: "assistant", text: assistantText, seed: Date.now() & 0xffffffff, voiceId } as Message,
-            ]);
-            setHistory((prev) => [
-              ...prev,
-              { role: "user", content: userText },
-              { role: "assistant", content: assistantText },
-            ]);
-          }}
-        />
-      )}
     </div>
   );
 }
