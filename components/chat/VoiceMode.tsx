@@ -87,7 +87,7 @@ export default function VoiceMode({
           }
           analyser.getByteFrequencyData(buf);
           const vol = buf.reduce((a, b) => a + b, 0) / buf.length;
-          if (vol > 18) {
+          if (vol > 30) {
             audio.pause();
             URL.revokeObjectURL(url);
             stream.getTracks().forEach((t) => t.stop());

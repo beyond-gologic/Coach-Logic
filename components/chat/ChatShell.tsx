@@ -326,35 +326,9 @@ export default function ChatShell() {
           />
         </div>
 
-        {/* Voice mode side panel — desktop */}
+        {/* Voice mode — single instance, side panel on desktop / bottom sheet on mobile */}
         {isVoiceMode && (
-          <div className="hidden md:flex md:flex-col flex-[0_0_40%] border-l border-border">
-            <VoiceMode
-              onClose={() => setIsVoiceMode(false)}
-              tone={tone}
-              voiceGender={voiceGender}
-              language={language}
-              history={history}
-              onMessageExchange={(userText, assistantText) => {
-                const voiceId = getVoiceId(tone, voiceGender);
-                setMessages((prev) => [
-                  ...prev,
-                  { id: mkId(), role: "user", text: userText, seed: Date.now() & 0xffffffff },
-                  { id: mkId(), role: "assistant", text: assistantText, seed: Date.now() & 0xffffffff, voiceId } as Message,
-                ]);
-                setHistory((prev) => [
-                  ...prev,
-                  { role: "user", content: userText },
-                  { role: "assistant", content: assistantText },
-                ]);
-              }}
-            />
-          </div>
-        )}
-
-        {/* Voice mode bottom sheet — mobile */}
-        {isVoiceMode && (
-          <div className="fixed bottom-0 left-0 right-0 h-[55vh] z-50 flex flex-col md:hidden border-t border-border">
+          <div className="md:flex md:flex-col md:flex-[0_0_40%] md:border-l md:border-border fixed bottom-0 left-0 right-0 h-[55vh] md:static md:h-auto z-50 border-t border-border">
             <VoiceMode
               onClose={() => setIsVoiceMode(false)}
               tone={tone}
