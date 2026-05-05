@@ -14,6 +14,7 @@ import {
   Mic,
   SendHorizonal,
   ChevronDown,
+  AudioLines,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -33,6 +34,7 @@ interface ComposerBarProps {
   language: Language | string;
   onLanguageChange: (lang: string) => void;
   onAttach: (files: FileList) => void;
+  onVoiceModeClick: () => void;
   disabled?: boolean;
 }
 
@@ -55,6 +57,7 @@ export default function ComposerBar({
   language,
   onLanguageChange,
   onAttach,
+  onVoiceModeClick,
   disabled,
 }: ComposerBarProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -267,6 +270,17 @@ export default function ComposerBar({
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Voice mode */}
+            <button
+              type="button"
+              onClick={onVoiceModeClick}
+              disabled={disabled}
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40"
+              title="Voice conversation mode"
+            >
+              <AudioLines className="w-4 h-4" />
+            </button>
 
             {/* Mic */}
             <button

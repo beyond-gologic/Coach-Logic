@@ -5,6 +5,7 @@ import TopBar from "./TopBar";
 import MessageThread from "./MessageThread";
 import AudioPreview from "./AudioPreview";
 import ComposerBar from "./ComposerBar";
+import VoiceMode from "./VoiceMode";
 import { detectLanguage } from "@/lib/language";
 import { getVoiceId, type Personality, type Language } from "@/lib/voices";
 
@@ -62,6 +63,7 @@ export default function ChatShell() {
   const [audioPreview, setAudioPreview] = useState<AudioPreviewState | null>(null);
   const [isSendingAudio, setIsSendingAudio] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
@@ -312,8 +314,32 @@ export default function ChatShell() {
         language={language}
         onLanguageChange={setLanguage}
         onAttach={handleAttach}
+        onVoiceModeClick={() => setIsVoiceMode(true)}
         disabled={isTyping || isSendingAudio}
       />
+
+      {isVoiceMode && (
+        <VoiceMode
+          onClose={() => setIsVoiceMode(false)}
+          tone={tone}
+          voiceGender={voiceGender}
+          language={language}
+          history={history}
+          onMessageExchange={(userText, assistantText) => {
+            const voiceId = getVoiceId(tone, voiceGender);
+            setMessages((prev) => [
+              ...prev,
+              { id: mkId(), role: "user", text: userText, seed: Date.now() & 0xffffffff },
+              { id: mkId(), role: "assistant", text: assistantText, seed: Date.now() & 0xffffffff, voiceId } as Message,
+            ]);
+            setHistory((prev) => [
+              ...prev,
+              { role: "user", content: userText },
+              { role: "assistant", content: assistantText },
+            ]);
+          }}
+        />
+      )}
     </div>
   );
 }
