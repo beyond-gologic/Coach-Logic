@@ -5,6 +5,12 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getVoiceId, type Personality } from "@/lib/voices";
 
+const LANG_CODE_MAP: Record<string, string> = {
+  en: "English", es: "Spanish", ar: "Arabic", tl: "Tagalog",
+  fr: "French", de: "German", it: "Italian", pt: "Portuguese",
+  zh: "Chinese", ja: "Japanese", ko: "Korean", hi: "Hindi",
+};
+
 type VoiceState = "listening" | "thinking" | "speaking";
 
 interface VoiceModeProps {
@@ -13,7 +19,7 @@ interface VoiceModeProps {
   voiceGender: "female" | "male";
   language: string;
   history: { role: string; content: string }[];
-  onMessageExchange: (userText: string, assistantText: string) => void;
+  onMessageExchange: (userText: string, assistantText: string, detectedLanguage?: string) => void;
 }
 
 export default function VoiceMode({
@@ -103,7 +109,7 @@ export default function VoiceMode({
     });
   }, [tone, voiceGender]);
 
-  const listen = useCallback(async (): Promise<string> => {
+  const listen = useCallback(async (): Promise<{ transcript: string; detectedLanguage?: string }> => {
     setState("listening");
     setTranscript("");
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -118,15 +124,15 @@ export default function VoiceMode({
       recorder.onstop = async () => {
         stopMic();
         const blob = new Blob(chunks, { type: mimeType });
-        if (blob.size < 1000) { resolve(""); return; }
+        if (blob.size < 1000) { resolve({ transcript: "" }); return; }
         const fd = new FormData();
         fd.append("file", blob, mimeType === "audio/webm" ? "audio.webm" : "audio.mp4");
         fd.append("model_id", "scribe_v1");
         try {
           const res = await fetch("/api/transcribe", { method: "POST", body: fd });
           const data = await res.json();
-          resolve(data.transcript || "");
-        } catch { resolve(""); }
+          resolve({ transcript: data.transcript || "", detectedLanguage: data.language_code });
+        } catch { resolve({ transcript: "" }); }
       };
       recorder.start(200);
 
@@ -161,30 +167,31 @@ export default function VoiceMode({
     });
   }, [stopMic]);
 
-  const chat = useCallback(async (userText: string): Promise<string> => {
+  const chat = useCallback(async (userText: string, replyLanguage: string): Promise<string> => {
     setState("thinking");
     setTranscript(userText);
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userText, language, tone, history: [...history].slice(-10), voiceMode: true }),
+      body: JSON.stringify({ message: userText, language: replyLanguage, tone, history: [...history].slice(-10), voiceMode: true }),
     });
     const data = await res.json();
     return data.reply || "";
-  }, [language, tone, history]);
+  }, [tone, history]);
 
   useEffect(() => {
     activeRef.current = true;
     const loop = async () => {
       while (activeRef.current) {
-        const userText = await listen();
+        const { transcript: userText, detectedLanguage: langCode } = await listen();
         if (!activeRef.current) break;
         if (!userText.trim()) continue;
-        const reply = await chat(userText);
+        const replyLang = (langCode && LANG_CODE_MAP[langCode.slice(0, 2)]) || language;
+        const reply = await chat(userText, replyLang);
         if (!activeRef.current) break;
         await speak(reply);
         if (!activeRef.current) break;
-        onMessageExchange(userText, reply);
+        onMessageExchange(userText, reply, replyLang);
       }
     };
     loop();

@@ -335,7 +335,7 @@ export default function ChatShell() {
               voiceGender={voiceGender}
               language={language}
               history={history}
-              onMessageExchange={(userText, assistantText) => {
+              onMessageExchange={(userText, assistantText, detectedLanguage) => {
                 const voiceId = getVoiceId(tone, voiceGender);
                 setMessages((prev) => [
                   ...prev,
@@ -347,6 +347,7 @@ export default function ChatShell() {
                   { role: "user", content: userText },
                   { role: "assistant", content: assistantText },
                 ]);
+                if (detectedLanguage) setLanguage(detectedLanguage);
               }}
             />
           </div>
