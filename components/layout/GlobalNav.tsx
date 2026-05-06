@@ -19,6 +19,7 @@ const NAV_TABS = [
   { label: "Tech Tools", href: "/tech-tools" },
   { label: "Calendar", href: "/calendar" },
   { label: "Meeting Records", href: "/meeting-records" },
+  { label: "Kanban", href: "/kanban" },
 ];
 
 export default function GlobalNav() {
